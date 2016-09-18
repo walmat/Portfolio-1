@@ -1,3 +1,0 @@
-Donavan: Hi
-Admin: Cool
-Donavan: image saved to your working directory

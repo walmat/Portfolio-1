@@ -1,4 +1,4 @@
-package lab01;
+package portfolio1;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

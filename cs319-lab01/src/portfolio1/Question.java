@@ -6,54 +6,34 @@ package portfolio1;
  */
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Question implements Serializable{
+public class Question {
 	
-	public static ArrayList<Question> questions; //ArrayList for pulling questions
+	public static ArrayList<Question> questions = new ArrayList<Question>(); //ArrayList for pulling questions
 	
 	//globals for access outside of Questions.java
-	private static String category;
-	private static String question;
-	private static String rightAnswer;
+	public String category;
+	public String question;
+	public String rightAnswer;
 
+	/*
+	 * Empty Constructor 
+	 */
 	public Question() { 
 		
 	}
 	
 	public Question(String category, String question, String rightAnswer) {
-		this.setCategory(category);
-		this.setQuestion(question);
-		this.setRightAnswer(rightAnswer);
-	}
-
-	public static void main(String[] args) {
-
-		questions = new ArrayList<Question>();
-		String site = "http://www.classicweb.com/usr/jseng/trivi.htm";
-		try {
-			//get the site and set the timeout to 10 seconds
-			Document doc = setupConnection(site);	
-			
-			//build the Arraylist based on the "pre" element
-			ArrayList<String> list = buildList(doc);
-			
-			//parse the category, question, and answer into a Question object and store it in list
-			parseData(list);
-			
-		} catch (IOException e){
-			System.out.println("Cannot fetch html from " + e.getMessage());
-		}		
+		this.category = category;
+		this.question = question;
+		this.rightAnswer = rightAnswer;
 	}
 	
 	/*
@@ -61,7 +41,6 @@ public class Question implements Serializable{
 	 */
 	
 	public void fillQuestionList () {
-		questions = new ArrayList<Question>();
 		String site = "http://www.classicweb.com/usr/jseng/trivi.htm";
 		try {
 			//get the site and set the timeout to 10 seconds
@@ -87,11 +66,11 @@ public class Question implements Serializable{
 	    return true;
 	}
 	
-	private static Document setupConnection(String site) throws IOException{
+	static Document setupConnection(String site) throws IOException{
 		return Jsoup.connect(site).timeout(10*1000).get();
 	}
 	
-	private static ArrayList<String> buildList(Document d){
+	static ArrayList<String> buildList(Document d){
 		ArrayList<String> list = new ArrayList<String>();
 		Elements pre = d.select("pre");
 		String q = "";
@@ -118,7 +97,7 @@ public class Question implements Serializable{
 		return list;
 	}
 	
-	private static void parseData(ArrayList<String> list) {
+	static void parseData(ArrayList<String> list) {
 		int cat_index = 0;
 		//int index = 0;
 		for (int i = 1; i < list.size();i++){
@@ -139,8 +118,9 @@ public class Question implements Serializable{
 				}
 				//remove extraneous characters from the answer
 				rightAnswer = rightAnswer.replaceAll("[^A-Za-z0-9 ]", "").trim();
-				questions.add(new Question(list.get(cat_index), question.trim() + "?", rightAnswer));
 				
+				//TODO -- figure out why it's rewriting previous instances of a Question();
+				questions.add(new Question(list.get(cat_index), question.trim() + "?", rightAnswer)); //rewriting previous question for some reason??
 				/* //testing purposes
 				System.out.println(questions.get(index).category);
 				System.out.println(questions.get(index).question);
@@ -158,8 +138,7 @@ public class Question implements Serializable{
 	
 	public String toString()
 	{
-		String q = category + "|" + question + "|" + rightAnswer;
-		return q;
+		return category + " | " + question + " | " + rightAnswer;
 		
 	}
 	
@@ -169,27 +148,4 @@ public class Question implements Serializable{
 	
 ///////////////////////////////////////////////////
 
-	public String getQuestion() {
-		return question;
-	}
-
-	public void setQuestion(String question) {
-		Question.question = question;
-	}
-
-	public String getRightAnswer() {
-		return rightAnswer;
-	}
-	
-	public void setRightAnswer(String rightAnswer) {
-		Question.rightAnswer = rightAnswer;
-	}
-
-	public String getCategory() {
-		return category;
-	}
-
-	public void setCategory(String category) {
-		Question.category = category;
-	}
 }

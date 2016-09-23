@@ -1,4 +1,4 @@
-package lab01;
+package portfolio1;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -44,7 +44,7 @@ import java.awt.List;
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
 
-public class AdminGUI extends JFrame {
+public class HostGUI extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField textField;
@@ -54,12 +54,13 @@ public class AdminGUI extends JFrame {
 	volatile boolean newImageMessage = false;
 	volatile boolean listMessages = false;
 	volatile boolean deleteMessage = false;
+	volatile boolean startRound = false;
 	private String message;
 
 	/**
 	 * Create the frame.
 	 */
-	public AdminGUI(String username) {
+	public HostGUI(String username) {
 		setTitle(username);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -142,84 +143,21 @@ public class AdminGUI extends JFrame {
 		label.setBounds(17, 171, 64, 14);
 		contentPane.add(label);
 		
-		JButton btnSendImage = new JButton("Send Img to Clients");
-		btnSendImage.setBounds(275, 101, 147, 23);
-		btnSendImage.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				JFileChooser fileChooser = new JFileChooser();
-				FileNameExtensionFilter imageFilter = new FileNameExtensionFilter(
-					    "Image files", ImageIO.getReaderFileSuffixes());
-				fileChooser.addChoosableFileFilter(imageFilter);
-				fileChooser.setAcceptAllFileFilterUsed(false);
-				int returnValue = fileChooser.showOpenDialog(null);
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					File selectedFile = fileChooser.getSelectedFile();
-					message = selectedFile.getAbsolutePath();
-					System.out.println(message);
-					newImageMessage = true;
-				}
-			}
-		});
-		contentPane.add(btnSendImage);
-
-		
-		JButton btnList = new JButton("List Messages");
-		btnList .setBounds(275, 136, 147, 23);
-		contentPane.add(btnList );
-		btnList .addMouseListener(new MouseAdapter() {
+		JButton btnStart = new JButton("Start Round");
+		btnStart.setBounds(275, 95, 147, 23);
+		contentPane.add(btnStart);
+		btnStart.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-			
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						
+						startRound = true;
+					}
+				});
 			}
 		});
-		
-		// when btnsend pressed, send the message
-		btnList .addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Set format of message and do some action to send it.
-				listMessages = true;
-			}
-		});
-		contentPane.add(btnList);
-		
-		
-		JButton btnDelete = new JButton("Delete Messages");
-		btnDelete.setBounds(275, 171, 147, 23);
-		contentPane.add(btnDelete);
-		btnSendText.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-			
-			}
-		});
-		// when btnsend pressed, send the message
-		btnDelete.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Set format of message and do some action to send it.
-				int index = 0;
-	
-				try {
-					index = Integer.parseInt(textField.getText());
-				}
-				catch (NumberFormatException | NullPointerException ne) {
-					JOptionPane.showMessageDialog(new JFrame(), "Please enter a number: " + ne.getMessage());
-				}
-		
-				if(index > 0) {
-					deleteMessage = true;
-				}
-				else{
-					deleteMessage = false;
-					 JOptionPane.showMessageDialog(new JFrame(), "Enter number greater than 0");
-				}
-			
-			}
-		});
-		contentPane.add(btnDelete);
 
 	}
 

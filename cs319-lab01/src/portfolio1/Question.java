@@ -6,15 +6,19 @@ package portfolio1;
  */
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Question {
+public class Question implements Serializable{
 	
 	public static ArrayList<Question> questions; //ArrayList for pulling questions
 	
@@ -23,6 +27,10 @@ public class Question {
 	private static String question;
 	private static String rightAnswer;
 
+	public Question() { 
+		
+	}
+	
 	public Question(String category, String question, String rightAnswer) {
 		this.setCategory(category);
 		this.setQuestion(question);
@@ -45,12 +53,31 @@ public class Question {
 			
 		} catch (IOException e){
 			System.out.println("Cannot fetch html from " + e.getMessage());
-		}	
+		}		
 	}
 	
 	/*
 	 * helper method for determining the categories
 	 */
+	
+	public void fillQuestionList () {
+		questions = new ArrayList<Question>();
+		String site = "http://www.classicweb.com/usr/jseng/trivi.htm";
+		try {
+			//get the site and set the timeout to 10 seconds
+			Document doc = setupConnection(site);	
+			
+			//build the Arraylist based on the "pre" element
+			ArrayList<String> list = buildList(doc);
+			
+			//parse the category, question, and answer into a Question object and store it in list
+			parseData(list);
+			
+		} catch (IOException e){
+			System.out.println("Cannot fetch html from " + e.getMessage());
+		}	
+	}
+	
 	private static boolean isAllUpper(String s) {
 	    for(char c : s.toCharArray()) {
 	       if(Character.isLetter(c) && Character.isLowerCase(c)) {
@@ -74,6 +101,7 @@ public class Question {
 		Scanner s = new Scanner(q);
 		
 		//handle fetching questions and sorting into categories and questions
+		
 		while (s.hasNextLine()){
 			String line = s.nextLine();
 			if (line.equals("")){
@@ -125,6 +153,14 @@ public class Question {
 			} while (!isAllUpper(list.get(i)));
 			cat_index = i;
 		}
+	}
+	
+	
+	public String toString()
+	{
+		String q = category + "|" + question + "|" + rightAnswer;
+		return q;
+		
 	}
 	
 	/*

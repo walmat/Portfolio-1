@@ -1,4 +1,4 @@
-package lab01;
+package portfolio1;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -46,12 +46,14 @@ public class ChatGUI extends JFrame
 	volatile boolean newTextMessage = false; 
 	volatile boolean newImageMessage = false;
 	private String message;
+	private String user;
+	volatile boolean startRound = false;
 
 
 	/**
 	 * Create the frame.
 	 */
-	public ChatGUI(String username)
+	public ChatGUI(String username, boolean type)
 	{
 		setTitle(username);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -73,6 +75,7 @@ public class ChatGUI extends JFrame
 		textField.setBounds(24, 197, 186, 23);
 		contentPane.add(textField);
 		textField.setColumns(10);
+		user = username;
 		
 		JButton btnSend = new JButton("Send");
 		btnSend.addMouseListener(new MouseAdapter() {
@@ -93,6 +96,7 @@ public class ChatGUI extends JFrame
 			{
 				// TODO Set format of message and do some action to send it.
 				newTextMessage = true;
+				
 			}
 		});
 		
@@ -160,13 +164,34 @@ public class ChatGUI extends JFrame
 		});
 		contentPane.add(button);
 		
+		if(type == true) {
+			
+			JButton btnStart = new JButton("Start Round");
+			btnStart.setBounds(275, 95, 147, 23);
+			contentPane.add(btnStart);
+			btnStart.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							startRound = true;
+						}
+					});
+				}
+			});
+		}
+		
+		//Reset the variable so that it will only alert the server to start the round once
+		if(startRound == true) {
+			startRound = false;
+		}
 	}
 	
 	public String getMessage()
 	{		
 		if(newTextMessage == true) {
 			newTextMessage = false;
-			message = textField.getText();
+			message = user + ": " + textField.getText();
 		}
 		else if(newImageMessage == true) {
 			newImageMessage = false;
@@ -182,30 +207,6 @@ public class ChatGUI extends JFrame
 			chatArea.append(message + "\n");
 		}
 		textField.setText("");
-	}
-	
-	public void showPicture(File picFile) {
-		
-		// Makes a new Jframe that displays the image recieved
-		JPanel imagePanel = new JPanel();
-	
-		 BufferedImage image = null;
-		try {
-			image = ImageIO.read(picFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		  JLabel picLabel = new JLabel(new ImageIcon(image));
-		  imagePanel.add(picLabel);
-		  imagePanel.repaint();
-		  
-		JFrame frame = new JFrame("Recieved Picture");
-	  		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	  		frame.add(imagePanel);
-	  		frame.setSize(400, 400);
-	  		frame.setVisible(true);
-	}		
-	
+	}	
 }
 

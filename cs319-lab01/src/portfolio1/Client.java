@@ -1,4 +1,7 @@
-package lab01;
+package portfolio1;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author Donavan Brooks and Matt Wall
@@ -11,27 +14,15 @@ package lab01;
  * 	If you recieve an image it will be saved to your working directory and opened up in a JFrame
  * 	A text message will just be displayed in chatGui
  */
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import javax.swing.Timer;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -40,26 +31,26 @@ public class Client implements Runnable
 	private Socket socket = null;
 	private Thread thread = null;
 	private ObjectOutputStream streamOut = null;
-	//private ClientThread client = null;
 	private String username;
 	private ChatGUI frame = null;
-	private AdminGUI frame1 = null;
-	private ClientThread chatClient = null;
+	private ServerThread serverTH = null;
 	private DataInputStream console = null;
-	private int recievedImages = 0;
+	private boolean clientType;
+	private boolean roundStarted = false;
+	private Timer timer;
 	
 	// This determines whether they are trying to send a message or image file
 	private int functionality = 0;
 
-	public Client(String ipAddr, String username, int serverPort, boolean admin)
+	public Client(String ipAddr, String username, String password, String email, String color, int serverPort, boolean type)
 	{
 		this.username = username;
-		
+		clientType =  type;
 		// set up the socket to connect to the gui
 		try
 		{
 			socket = new Socket(ipAddr, serverPort);
-			start(admin);
+			start();
 		} catch (UnknownHostException h)
 		{
 			System.out.println("Unknown Host " + h.getMessage());
@@ -75,323 +66,92 @@ public class Client implements Runnable
 	{
 		//TODO check for a new message, once we receive it, streamOut will send it to the server
 		while(thread != null){
-			if(frame != null && frame.newTextMessage == true) {
-
-				try {
-					String message = username + ": " + frame.getMessage();
-					// Writes encrypted text message to OutputStream
-					streamOut.writeObject(encryptTextMessage(message));
-					streamOut.flush();
-				} 
-				catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					System.out.println("Error Sending message: " + e.getMessage());
-					stop();
-				}	
-			}
+			String[] message = new String[2];
 			
-			if(frame != null && frame.newImageMessage == true) {
-
-				try {
-					
-					String filePath = frame.getMessage();
-					streamOut.writeObject(encryptImageMessage(filePath));
-					streamOut.flush();
-				} 
-				catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					System.out.println("Error Sending message: " + e.getMessage());
-					stop();
-				}	
-			}
-			
-			if(frame1 != null && frame1.newTextMessage == true) 
-			{
-				try {
-					
-					String message = username + ": " + frame1.getMessage();
-					streamOut.writeObject(encryptTextMessage(message));
-					streamOut.flush();
+			if(frame != null) { 
+				
+				message[0] = String.valueOf(this.socket.getLocalPort());
+				
+				if(frame.newTextMessage == true) {
+				
+					try{
+						message[1] = frame.getMessage();
+						streamOut.writeObject(message);
+						streamOut.flush();
+					}catch (IOException e) {
+						JOptionPane.showMessageDialog(new JFrame(), "Error Sending Message" + e.getMessage());
+						stop();
+					}	
 				}
-				catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					System.out.println("Error Sending message: " + e.getMessage());
-					stop();
-				}	
-			}
 			
-		
-			if(frame1 != null && frame1.newImageMessage == true) 
-			{
-				try {
+				if(frame.startRound == true && roundStarted == false) {
 					
-					String filePath = frame1.getMessage();
-					streamOut.writeObject(encryptImageMessage(filePath));
-					streamOut.flush();
-				} 
-				catch (IOException e) {
-	
-					e.printStackTrace();
-					System.out.println("Error Sending message: " + e.getMessage());
-					stop();
-				}	
-			}
-			
-			if(frame1 != null && frame1.deleteMessage == true) 
-			{
-				try {
-					int msgIndex = 0;
-	
-					// Holds the index of the message you wnat to delete
-				    msgIndex = Integer.parseInt(frame1.getMessage());
-				    
-				    System.out.println("Index: " + msgIndex);
-				    File chatHistory = new File("chat.txt");
-				    BufferedReader reader = new BufferedReader(new FileReader(chatHistory));
-					File tempFile = new File("tempFile.txt");
-					PrintWriter writer = new PrintWriter(new FileWriter(tempFile),true);
-	
-					Scanner fileScan = new Scanner(chatHistory);
-					
-					// This checks to see if there are any messages in the chat if not it throws a NoSuchElementException
-					fileScan.nextLine();
-					int lineCount = 0;
-					String currentLine;
-	
-					// For every line in chat.txt if it is not the index that wants to be deleted it writes it to a tempFile.txt
-					while((currentLine = reader.readLine()) != null) {
-						
-						if(lineCount != (msgIndex - 1)) {
-							
-							System.out.println(lineCount + ":" + currentLine);
-							writer.append(currentLine + "\n");
-							writer.flush();
-						}
-		
-						if(!fileScan.hasNextLine() && lineCount < msgIndex - 1) {
-							JOptionPane.showMessageDialog(new JFrame(), "Chat History Message Index Does Not Exist");
-							return;
-						}
-						lineCount++;
-					}
-					
-					writer.close();
-					fileScan.close();
-					reader.close();
-					
-					// This renames tempFile.txt to chat.txt
 					try {
-						Files.move(tempFile.toPath(), chatHistory.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						message[1] = "....Start....";
+						streamOut.writeObject(message);
+						streamOut.flush();
+						frame.startRound = false;
+						roundStarted = true;
+					} catch (IOException e) {
+						JOptionPane.showMessageDialog(new JFrame(), "Error while trying to start the round" + e.getMessage());
+						stop();
 					}
-					catch(FileSystemException e)
-					{
-						JOptionPane.showMessageDialog(new JFrame(), "Try closing other clients in order to delete messages");
-					}
-			
 				}
-				
-				catch(NoSuchElementException e) 
-				{
-					JOptionPane.showMessageDialog(new JFrame(), "No messages in chat history");
-				}
-				catch(FileSystemException e)
-				{
-					JOptionPane.showMessageDialog(new JFrame(), "Try closing other clients in order to delete messages");
-				}
-				catch (IOException e) {
-					e.printStackTrace();
-					System.out.println("Error Sending message: " + e.getMessage());
-					stop();
-				}	
 			}
-			
-			if(frame1 != null && frame1.listMessages == true) 
-			{
-				BufferedReader reader = null;
-				File file = new File("chat.txt");
-			    try {
-					reader = new BufferedReader(new FileReader(file));
-				} catch (FileNotFoundException e) {
-					JOptionPane.showMessageDialog(new JFrame(), "Chat.txt does not exist/ or no messages in chat history");
-				}
-			    
-			   // Gets the past messages sent and prints them to the gui
-			   String currentLine;
-			   String chatHistory = "\n--- Chat History --- \n";
-			   try {
-				   while((currentLine = reader.readLine()) != null)
-					   chatHistory += currentLine + "\n";
-			   } catch (IOException | NullPointerException e) {
-				JOptionPane.showMessageDialog(new JFrame(), "There are no messages in chat history");
-			   }
-			   
-			   frame1.recieveMessage(chatHistory);
-			   frame1.listMessages = false;
-			}
-
 		}
 	}
 
-	public String[] encryptTextMessage(String message) {
-		
-		// ------ Encryption of message -----
-		byte[] b = message.getBytes();
-		for(int i = 0; i < b.length; i++) {
-			b[i] = ((byte)(b[i]^11110000));
-		}
-		String encryptedMsg = new String(b);
-		// -----  Done -----------------------
-
-		String[] msgArray = new String[3];
-		msgArray[0] = msgArray.length + "";
-		msgArray[1] = encryptedMsg;
-		msgArray[2] = "Text";
-		
-		return msgArray;
-		
-	}
 	
-	public String[] encryptImageMessage(String filePath) {
-		
-		File imgPath = new File(filePath);
-		BufferedImage bufferedImg = null;
-		try {
-			bufferedImg = ImageIO.read(imgPath);
-		} catch (IOException e) {
-			System.out.println("Error while trying to read Image Path" + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		String[] fileName = imgPath.getName().split("\\.");
-		String fileExtension = fileName[fileName.length - 1] ;
-		
-		// This writes the buffered image to the ByteArrayOutputStream
-		ByteArrayOutputStream streamImg = new ByteArrayOutputStream();
-		try {
-			ImageIO.write(bufferedImg, fileExtension , streamImg);
-		} catch (IOException e) {
-			System.out.println("Error while trying to write bufferedImage to ByteArrayOutputStream " + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		//Holds the bytes of the image
-		byte[] b = streamImg.toByteArray();
-		
-		//Holds the bits turned into characters
-		String message = "";
-		
-		int remainder = (b.length - ((int)b.length/3) * 3);
-	
-		// ------ Encryption of Image Message -----
-		
-		// Gets the 24 bits, splits them into four 6 bit fragments and adds '00' to the rightmost side
-		for(int i = 0; i < b.length - remainder; i+=3)
-		{
-			String bitString = ((Integer.toBinaryString(b[i] & 255 | 256).substring(1)) + (Integer.toBinaryString(b[i+1] & 255 | 256).substring(1)) + (Integer.toBinaryString(b[i+2] & 255 | 256).substring(1)));
-			
-			String[] parts = bitString.split("(?<=\\G.{6})");
-			for(int j = 0; j < parts.length; j++) {
-				String piece = parts[j] + "00";
-				
-				int parseInt = Integer.parseInt(piece, 2);
-				char c = (char)parseInt;
-				message += c;
-			}	
-		}
-		
-		//This adds the left over bytes to the message if the image is not mod 3
-		if(remainder != 0)
-		{
-			for(int i = (b.length)-remainder ; i < b.length; i ++) {
-				
-				String bitString = (Integer.toBinaryString(b[i] & 255 | 256).substring(1));
-				int parseInt = Integer.parseInt(bitString, 2);
-				char c = (char)parseInt;
-				message += c;
-			}
-		}
-		// Sends nformation to server like this and server interprets it
-		String[] msgArray = new String[7];
-		msgArray[0] = msgArray.length + "";
-		msgArray[1] = username;
-		msgArray[2] = message;
-		msgArray[3] = remainder + "";
-		msgArray[4] = fileName[0];
-		msgArray[5] = fileExtension;
-		msgArray[6] = "Image";
-		
-		return msgArray;
-	}
-	
-	public synchronized void handleChat(Object msg)
+public synchronized void handleChat(Object msg)
 	{
 		//TODO
 		//If it is a text message just print it in the ui
-	if(msg instanceof String){
-	
-		if(username.equalsIgnoreCase("Admin"))
-		{
-			frame1.recieveMessage((String)msg);
-		}
-		else
-			frame.recieveMessage((String)msg);
-	}
-	
-	// If it is a file it saves it to your working directory and opens up a Jframe that displays it
-	else if(msg instanceof File){
-	
-		BufferedImage bi;
-	
-		File outputfile = new File(username + "_" + ((File) msg).getName());
-		if(username.equalsIgnoreCase("Admin"))
-		{
-			System.out.println("Recieved file");
-			  try {
-				bi = ImageIO.read((File) msg);
-				ImageIO.write(bi, "png", outputfile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			  frame1.showPicture((File)msg);
-		}
-		else{
-				System.out.println("Recieved file");
-			  try {
-				bi = ImageIO.read((File) msg);
-				ImageIO.write(bi, "png", outputfile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			  frame.showPicture((File)msg);
-		}
-		//This variable is just so the naming of each photo received is different
-		recievedImages++;
+	if(msg instanceof String) {
 		
+		frame.recieveMessage((String)msg);
 	}
 	
+	if(msg instanceof Question && ((Question) msg).getQuestion() != null) {
+		
+		System.out.println(((Question) msg).getQuestion());
+		frame.recieveMessage(((Question) msg).getQuestion());
+		roundStarted = true;
+		
+//		ActionListener actionListener = new ActionListener() {
+//		    int timeRemaining = 5;
+//
+//		    public void actionPerformed(ActionEvent evt){
+//		    	timeRemaining--;
+//		        System.out.println("Time: " + timeRemaining);
+//		        if(timeRemaining <= 0){
+//		        	timer.stop();
+//		        	roundStarted = false;
+//		        	String[] timeDone = {String.valueOf(socket.getLocalPort()), "Timer is done"};
+//		        	try {
+//						streamOut.writeObject(timeDone);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//		       }
+//		   }
+//		};
+		
+//		timer = new Timer(1000, actionListener);
+//		timer.start();
 	}
+	
+}
 
-	public void start(boolean admin) throws IOException
+	public void start() throws IOException
 	{
-		if (admin) {
-			frame1 = new AdminGUI(username);
-			frame1.setVisible(true);
-			
-		} else {
-			frame = new ChatGUI(username);
-			frame.setVisible(true);
-		}
+		frame = new ChatGUI(username, clientType);
+		frame.setVisible(true);
 		
 		streamOut = new ObjectOutputStream(socket.getOutputStream());
-//		console = new DataInputStream(frame.getMessage());
 		
 		if(thread == null) {
-			chatClient = new ClientThread(this, socket);
+			serverTH = new ServerThread(this, socket);
 			thread = new Thread(this);
 			thread.start();
 		}
@@ -419,8 +179,8 @@ public class Client implements Runnable
 		catch (IOException e) {
 			System.out.println("Error while trying to close: " + e.getMessage());
 		}
-		chatClient.close();
-		chatClient.stop();
+		serverTH.close();
+		serverTH.stop();
 
 	}
 	
@@ -431,13 +191,13 @@ public class Client implements Runnable
 }
 
 
-	class ClientThread extends Thread {
+	class ServerThread extends Thread {
 		private Socket sock = null;
 		private Client client = null;
 		private ObjectInputStream streamIn = null;
 		
 	
-		public ClientThread(Client chatClient, Socket socket_) {
+		public ServerThread(Client chatClient, Socket socket_) {
 			
 			client = chatClient;
 			sock = socket_;

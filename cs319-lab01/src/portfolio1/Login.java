@@ -136,7 +136,8 @@ public class Login extends JFrame {
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
-									Client client = new Client("localhost", username, password, email, color, 1222, giveHostProperties);
+									JoinStartGUI js = new JoinStartGUI(username, password, email, color);
+									js.setVisible(true);
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -184,7 +185,8 @@ public class Login extends JFrame {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							Client client = new Client("localhost", username, password, email, color, 1222, giveHostProperties);
+							JoinStartGUI js = new JoinStartGUI(username, password, email, color);
+							js.setVisible(true);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}

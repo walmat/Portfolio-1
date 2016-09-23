@@ -36,6 +36,7 @@ public class Server implements Runnable
 	private ClientThread clients[] = new ClientThread[5];
 	private int clientNum = 0;
 	private boolean roundStarted = false;
+	int timerCount = 0;
 
 	public Server(int port)
 	{
@@ -66,6 +67,7 @@ public class Server implements Runnable
 				}	
 				else {
 					addThread(serverSocket.accept());
+					clients[clientNum - 1].sendMsg("Connected to server");
 					System.out.println("Client Count: " + clientNum);
 				}
 			}
@@ -114,26 +116,30 @@ public class Server implements Runnable
 
 		return -1;
 	}
-
-	public void nextRound() {
-		
-	}
 	
 	public synchronized void handle(String[] input)
 	{
+		
 		// TODO new message, send to clients and then write it to history
-		if(input[0].equals(clients[0].getID() + "") && input[1].equals("....Start....")) {
+		if(input[0].equals(clients[0].getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
 			
 			for(int i = 0; i < clientNum; i++) {
-				String qMsg = Question.questions.get(1).getQuestion();
-				Question qSend = Question.questions.get(i);
-				int k =1;
-				clients[i].sendQuestion(qSend);
+				String qMsg = Question.questions.get(0).getQuestion();
+				clients[i].sendMsg(qMsg);
+				roundStarted = true;
 			}
 		}
-		else {
+		else if(roundStarted == false){
 			for(int i = 0; i < clientNum; i++) {
 				clients[i].sendMsg(input[0]);
+			}
+		}
+		
+		if(input[1].equals("Timer is done")) {
+			timerCount++;
+			System.out.println("TimerCount: " + timerCount);
+			if(timerCount == clientNum) { 
+				roundStarted = false;
 			}
 		}
 		

@@ -1,5 +1,6 @@
 package portfolio1;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -38,6 +39,7 @@ public class Client implements Runnable
 	private boolean clientType;
 	private boolean roundStarted = false;
 	private Timer timer;
+	private boolean connected = false;
 	
 	// This determines whether they are trying to send a message or image file
 	private int functionality = 0;
@@ -102,53 +104,52 @@ public class Client implements Runnable
 	}
 
 	
-public synchronized void handleChat(Object msg)
+public void handleChat(Object msg)
 	{
 		//TODO
 		//If it is a text message just print it in the ui
-	if(msg instanceof String) {
+	
+	if(((String) msg).contains("?")){
 		
 		frame.recieveMessage((String)msg);
-	}
-	
-	if(msg instanceof Question && ((Question) msg).getQuestion() != null) {
-		
-		System.out.println(((Question) msg).getQuestion());
-		frame.recieveMessage(((Question) msg).getQuestion());
 		roundStarted = true;
+	
+		ActionListener actionListener = new ActionListener() {
+		    int timeRemaining = 10;
+
+		    public void actionPerformed(ActionEvent evt){
+		    	timeRemaining--;
+		        System.out.println("Time: " + timeRemaining);
+		        if(timeRemaining <= 0){
+		        	timer.stop();
+		        	roundStarted = false;
+		        	String[] timeDone = {String.valueOf(socket.getLocalPort()), "Timer is done"};
+		        	try {
+						streamOut.writeObject(timeDone);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		       }
+		   }
+		};
 		
-//		ActionListener actionListener = new ActionListener() {
-//		    int timeRemaining = 5;
-//
-//		    public void actionPerformed(ActionEvent evt){
-//		    	timeRemaining--;
-//		        System.out.println("Time: " + timeRemaining);
-//		        if(timeRemaining <= 0){
-//		        	timer.stop();
-//		        	roundStarted = false;
-//		        	String[] timeDone = {String.valueOf(socket.getLocalPort()), "Timer is done"};
-//		        	try {
-//						streamOut.writeObject(timeDone);
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//		       }
-//		   }
-//		};
-		
-//		timer = new Timer(1000, actionListener);
-//		timer.start();
+		timer = new Timer(1000, actionListener);
+		timer.start();
+	}
+		else  {
+			frame.recieveMessage((String)msg);
+		}
 	}
 	
-}
 
 	public void start() throws IOException
 	{
 		frame = new ChatGUI(username, clientType);
 		frame.setVisible(true);
-		
+	
 		streamOut = new ObjectOutputStream(socket.getOutputStream());
+		System.out.println("Ouput Stream created");
 		
 		if(thread == null) {
 			serverTH = new ServerThread(this, socket);

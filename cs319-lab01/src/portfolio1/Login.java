@@ -1,5 +1,6 @@
 package portfolio1;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -22,15 +23,19 @@ import javax.swing.border.EmptyBorder;
 
 public class Login extends JFrame {
 
+	/**
+	 * serial
+	 */
+	private static final long serialVersionUID = 5385216568336112207L;
 	private JPanel contentPane;
-	private String color;
+	private Color color;
 	private String email;
 	private String password;
 	private String username;
-	private boolean giveHostProperties = false;
 	private JTextField emailField;
 	private JTextField passwordField;
 	private JTextField usernameField;
+	
 	
 	public static final Pattern VALID_EMAIL_ADDRESS_REGEX = 
 		    Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
@@ -44,8 +49,13 @@ public class Login extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Login frame = new Login();
-					frame.setVisible(true);
+					if (Server.clientNum <= 5){
+						Login frame = new Login();
+						frame.setVisible(true);
+					}
+					else {
+						System.out.println("too many clients connected to same game");
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -67,7 +77,7 @@ public class Login extends JFrame {
 		
 		String[] options = new String[] {"Green", "Blue",
                 "Red", "Orange"};
-		JComboBox comboBox = new JComboBox(options);
+		JComboBox<?> comboBox = new JComboBox<Object>(options);
 		comboBox.setBounds(80, 169, 135, 27);
 		contentPane.add(comboBox);
 
@@ -121,7 +131,7 @@ public class Login extends JFrame {
 					username = usernameField.getText().trim();
 					password = passwordField.getText().trim();
 					email = emailField.getText().trim();
-					color = options[comboBox.getSelectedIndex()];
+					color = parseColor(options[comboBox.getSelectedIndex()]);
 					if (username.equals("") || password.equals("") || email.equals("")){
 						System.out.println("Please fill out all fields.");
 						System.exit(-1);
@@ -136,6 +146,26 @@ public class Login extends JFrame {
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
+//									InetAddress i = InetAddress.getLocalHost();
+//									System.out.println(i.getHostName());
+//									System.out.println(i.getHostAddress());
+//									System.out.println(Server.clientNum);
+									
+									//check for current client with same username/email
+									if (Server.clientsList.size() > 0) {
+										for (int j = 0; j < Server.clientsList.size(); j++){
+											if (Server.clientsList.get(j).getClientName() == username){
+												System.out.println("That name is taken sorry.");
+												dispose();
+											}
+											if (Server.clientsList.get(j).getClientEmail() == email){
+												System.out.println("Email already registered in current game.");
+												dispose();
+											}
+										}
+									}
+									//Client client = new Client("localhost", username, password, email, color, 1222);
+									//clientsList.add(new Client("localhost", username, password, email, color, 1222));
 									JoinStartGUI js = new JoinStartGUI(username, password, email, color);
 									js.setVisible(true);
 								} catch (Exception e) {
@@ -170,7 +200,7 @@ public class Login extends JFrame {
 				username = usernameField.getText().trim();
 				password = passwordField.getText().trim();
 				email = emailField.getText().trim();
-				color = options[comboBox.getSelectedIndex()];
+				color = parseColor(options[comboBox.getSelectedIndex()]);
 				if (username.equals("") || password.equals("") || email.equals("")){
 					System.out.println("Please fill out all fields.");
 					System.exit(-1);
@@ -185,6 +215,8 @@ public class Login extends JFrame {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
+							//Client client = new Client("localhost", username, password, email, color, 1222);
+							//clientsList.add(new Client("localhost", username, password, email, color, 1222));
 							JoinStartGUI js = new JoinStartGUI(username, password, email, color);
 							js.setVisible(true);
 						} catch (Exception e) {
@@ -203,5 +235,12 @@ public class Login extends JFrame {
 	public static boolean validate(String emailStr) {
         Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
         return matcher.find();
+	}
+	
+	public static Color parseColor(String colorName){
+		return colorName.equalsIgnoreCase("blue") ? new Color(80, 140, 164) : 
+			colorName.equalsIgnoreCase("green") ? new Color(78, 110, 93) :
+			colorName.equalsIgnoreCase("orange") ? new Color(238, 150, 75) :
+				new Color(192, 57, 63);
 	}
 }

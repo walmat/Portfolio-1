@@ -18,8 +18,14 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
+import java.awt.Component;
 
 public class QuestionUI extends JFrame
 {
@@ -29,28 +35,27 @@ public class QuestionUI extends JFrame
 	 */
 	private static final long serialVersionUID = 5380090635516117072L;
 	private JPanel contentPane;
-	
 	volatile boolean newTextMessage = false; 
 	volatile boolean newImageMessage = false;
 	private String message;
-	private JTextArea questionField;
+	private JTextPane questionField;
 
 	/**
 	 * Create the frame.
 	 */
-	public QuestionUI(String username, Color color, ArrayList<Answer> answers)
+	public QuestionUI(String q, ArrayList<Answer> answers)
 	{
 		int numAnswer = answers.size();
+		System.out.println(numAnswer);
 		
-		
-		setTitle(username);
+		setTitle("Questions");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		contentPane.setBackground(color);
+		//contentPane.setBackground(color);
 
 		
 		JLabel lblTypeYourAnswer = new JLabel("Select your answer");
@@ -79,6 +84,11 @@ public class QuestionUI extends JFrame
 				newTextMessage = true;
 			}
 		});
+		if (numAnswer >= 1){
+			button1.setText(answers.get(0).answer);
+			contentPane.add(button1);
+		}
+		
 		
 		JButton button2 = new JButton("");
 		button2.addMouseListener(new MouseAdapter() {
@@ -89,37 +99,67 @@ public class QuestionUI extends JFrame
 		});
 		button2.setBounds(226, 150, 163, 23);
 		
+		if (numAnswer >= 2){
+			button2.setText(answers.get(1).answer);
+			contentPane.add(button2);
+		}
 
 		JButton button3 = new JButton("");
+		button3.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+
+			}
+		});
 		button3.setBounds(51, 201, 163, 23);
 		
+		if (numAnswer >= 3){
+			button3.setText(answers.get(2).answer);
+			contentPane.add(button3);
+		}
+		
 		JButton button4 = new JButton("");
+		button4.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+
+			}
+		});
 		button4.setBounds(226, 201, 163, 23);
 		
-		questionField = new JTextArea();
-		questionField.setFont(new Font("Gotham Medium", Font.BOLD, 20));
-		questionField.setBounds(24, 18, 404, 42);
-		contentPane.add(questionField);
-		questionField.setColumns(10);
-		
-		if (numAnswer == 1) {
-			contentPane.add(button1);
-		}
-		else if (numAnswer == 2) {
-			contentPane.add(button1);
-			contentPane.add(button2);
-		}
-		else if (numAnswer == 3) {
-			contentPane.add(button1);
-			contentPane.add(button2);
-			contentPane.add(button3);
-		}
-		else {
-			contentPane.add(button1);
-			contentPane.add(button2);
-			contentPane.add(button3);
+		if (numAnswer >= 4){
+			button4.setText(answers.get(3).answer);
 			contentPane.add(button4);
 		}
+		
+		questionField = new JTextPane();
+		StyledDocument doc = questionField.getStyledDocument();
+		SimpleAttributeSet center = new SimpleAttributeSet();
+		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+		doc.setParagraphAttributes(0, doc.getLength(), center, false);
+		questionField.setFont(new Font("Gotham Medium", Font.BOLD, 20));
+		questionField.setBounds(24, 18, 404, 42);
+		questionField.setText(q);
+		contentPane.add(questionField);
+		
+//		if (numAnswer == 1) {
+//			contentPane.add(button1);
+//		}
+//		else if (numAnswer == 2) {
+//			contentPane.add(button1);
+//			contentPane.add(button2);
+//		}
+//		else if (numAnswer == 3) {
+//			contentPane.add(button1);
+//			contentPane.add(button2);
+//			contentPane.add(button3);
+//		}
+//		else {
+//			contentPane.add(button1);
+//			contentPane.add(button2);
+//			contentPane.add(button3);
+//			contentPane.add(button4);
+//		}
 		
 	}
 	
@@ -140,7 +180,7 @@ public class QuestionUI extends JFrame
 	public void recieveMessage(String message)
 	{
 		if (!message.trim().equals("")){
-			questionField.append(message + "\n");
+			questionField.setText(message + "\n");
 		}
 		questionField.setText("");
 	}

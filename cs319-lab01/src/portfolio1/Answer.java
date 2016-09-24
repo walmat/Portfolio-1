@@ -22,12 +22,7 @@ public class Answer implements Serializable{
 	
 	@Override
 	public String toString(){
-		return port + " " + answer;
-	}
-	
-	@Override
-	public Answer clone() throws CloneNotSupportedException{
-		return (Answer) super.clone();
+		return answer;
 	}
 	
 }	

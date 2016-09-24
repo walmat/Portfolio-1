@@ -2,9 +2,7 @@ package portfolio1;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 /**
  * @author Donavan Brooks and Matt Wall
@@ -40,7 +38,7 @@ public class Server implements Runnable
 	
 	public Server(int port)
 	{
-		//TODO Binding and starting server
+		//Binding and starting server
 		try
 		{
 			System.out.println("Binding to port " + port + ", please wait  ...");
@@ -58,7 +56,7 @@ public class Server implements Runnable
 
 	public void run()
 	{
-		//TODO wait for a client or show error
+		//hang and wait for a client or show error
 		while(true){
 			try {
 				System.out.println("Waiting for a client....");
@@ -76,8 +74,7 @@ public class Server implements Runnable
 				try {
 					stop();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					System.out.println("Couldn't stop thread: " + e1.getMessage());
 				}
 			}
 		}
@@ -87,7 +84,8 @@ public class Server implements Runnable
 	{
 		frame = new ServerGUI();
 		frame.setVisible(true);
-		//TODO launch a thread to read for new messages by the server
+		
+		//launch a thread to read for new messages by the server
 		if(mainThread == null){
 			mainThread = new Thread(this);
 			mainThread.start();
@@ -97,7 +95,6 @@ public class Server implements Runnable
 	
 	public void stop() throws IOException
 	{
-		//TODO
 		if(mainThread != null) {
 			mainThread.stop();
 			mainThread = null;
@@ -106,7 +103,7 @@ public class Server implements Runnable
 
 	private int findClient(int ID)
 	{
-		//TODO Find Client
+		//Find Client
 		for(int i = 0; i < clientNum; i++)
 		{
 			if(clients.get(i).getID() == ID) {
@@ -120,7 +117,7 @@ public class Server implements Runnable
 	public synchronized void handle(String[] input)
 	{
 		
-		// TODO new message, send to clients and then write it to history
+		//new message, send to clients and then write it to history
 		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
 			
 			Question sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
@@ -148,8 +145,12 @@ public class Server implements Runnable
 			        	
 			        	for(int i = 0; i < clientAnswers.size(); i++) {
 			        		int port = clients.get(i).getID();
+			        		
 							try {
-								clients.get(i).sendMsg(randomizeClientAnswers(port).toString());
+								QuestionUI q = new QuestionUI(sentQuestion.question, randomizeClientAnswers(port));
+								clients.get(i).sendMsg(q);
+								q.setVisible(true);
+								//System.out.println(randomizeClientAnswers(port));
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
 							}
@@ -158,8 +159,6 @@ public class Server implements Runnable
 			        	/*
 			        	 * handle opening new GUI and implement scoring based on individual client's selected answer
 			        	 */
-			        	
-			        	
 			        	
 			        	
 			        	clientAnswers.clear();
@@ -207,7 +206,7 @@ public class Server implements Runnable
 	
 	public synchronized void remove(int ID)
 	{
-		//TODO get the ClientThread, remove it from the array and then terminate it
+		//get the ClientThread, remove it from the array and then terminate it
 	
 		int index = findClient(ID);
 		System.out.println("Client Count: " + clientNum) ;
@@ -229,7 +228,7 @@ public class Server implements Runnable
 
 	private void addThread(Socket socket)
 	{
-		//TODO add new client
+		//add new client
 		if (clientNum < 5){  
 			System.out.println("Client accepted: " + socket);
 	         clients.add(new ClientThread(this, socket));
@@ -246,26 +245,13 @@ public class Server implements Runnable
 	      else
 	      	System.out.println("Maximum Number of clients has been reached");
 	}
-
-	public static void main(String args[])
-	{
-		q = new Question();
-		//q.main(args);
-		Server server = null;
-		server = new Server(1222);
-		
-		for (int i= 0; i < q.questions.size(); i++) {
-			System.out.println(q.questions.get(i));
-		}
-	}
 	
 	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
 		
-		//new array has references to old array's objects so it's being updated. fuck us. trying to solve that by performing a deep copy.
+		//solve copying by performing a deep copy.
 		ArrayList<Answer> a = cloneList(clientAnswers);
 		
 		for (int i = 0; i < clientAnswers.size(); i++){
-			//if (a.get(i).port.equals(String.valueOf(c.getID()))){
 			if (a.get(i).port.equals(String.valueOf(port))) {
 				a.get(i).answer = sentQuestionAns;
 			}

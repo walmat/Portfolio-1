@@ -124,17 +124,9 @@ public class JoinStartGUI extends JFrame{
 					EventQueue.invokeLater(new Runnable() {
 						public void run() {
 							try {
-								//if (Server.clients.size() < 5 && Server.roundStarted == false) {
 								Client client = new Client(textField.getText(), username, password, email, color, 1222, false);
-//								}
-//								else if (Server.roundStarted == true){
-//									JOptionPane.showMessageDialog(new JPanel(), "Sorry, we're in the middle of a round");
-//								}
-//								else {
-//									JOptionPane.showMessageDialog(new JPanel(), "Game full. Try again later.");
-//								}
 							} catch (Exception e) {
-								e.printStackTrace();
+								System.out.println("unable to create client: " + e.getMessage());
 							}
 						}
 					});

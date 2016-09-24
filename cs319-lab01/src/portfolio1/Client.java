@@ -33,12 +33,12 @@ public class Client implements Runnable
 	private Socket socket = null;
 	private Thread thread = null;
 	private ObjectOutputStream streamOut = null;
-	private String username;
+	public String username;
 	private ClientGUI frame = null;
 	private ServerThread serverTH = null;
 	private DataInputStream console = null;
 	private boolean clientType;
-	private Color color;
+	public Color color;
 	private boolean roundStarted = false;
 	private boolean connected = false;
 	private Server s;
@@ -124,6 +124,10 @@ public void handleChat(Object msg)
 		roundStarted = true;
 	}
 	
+	else if (msg instanceof QuestionUI){
+		((QuestionUI) msg).setVisible(true);
+	}
+	
 	else {
 		frame.recieveMessage((String)msg);
 		}
@@ -137,7 +141,7 @@ public void handleChat(Object msg)
 		frame.setVisible(true);
 	
 		streamOut = new ObjectOutputStream(socket.getOutputStream());
-		System.out.println("Ouput Stream created");
+		//System.out.println("Ouput Stream created");
 		
 		if(thread == null) {
 			serverTH = new ServerThread(this, socket);

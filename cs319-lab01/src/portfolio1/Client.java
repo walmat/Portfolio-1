@@ -41,6 +41,7 @@ public class Client implements Runnable
 	private Color color;
 	private boolean roundStarted = false;
 	private boolean connected = false;
+	private Server s;
 	
 	// This determines whether they are trying to send a message or image file
 
@@ -67,7 +68,7 @@ public class Client implements Runnable
 
 	public void run()
 	{
-		//TODO check for a new message, once we receive it, streamOut will send it to the server
+		//check for a new message, once we receive it, streamOut will send it to the server
 		while(thread != null){
 			String[] message = new String[2];
 			
@@ -107,7 +108,6 @@ public class Client implements Runnable
 	
 public void handleChat(Object msg)
 	{
-		//TODO
 		//If it is a text message just print it in the ui
 	if(msg instanceof Integer)
 	{
@@ -132,6 +132,10 @@ public void handleChat(Object msg)
 
 	public void start() throws IOException
 	{
+<<<<<<< HEAD
+=======
+	
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 		frame = new ClientGUI(username, color, clientType);
 		frame.setVisible(true);
 	
@@ -147,7 +151,6 @@ public void handleChat(Object msg)
 
 	public void stop()
 	{
-		//TODO
 		if(thread != null) {
 			thread.stop();
 			thread = null;
@@ -170,11 +173,6 @@ public void handleChat(Object msg)
 		serverTH.close();
 		serverTH.stop();
 
-	}
-	
-	public static void main(String args[]) {
-		Login log = new Login();
-		log.main(args);
 	}
 }
 
@@ -226,7 +224,6 @@ public void handleChat(Object msg)
 					System.out.println("Problem When trying to listen for messages: " + e.getMessage());
 					client.stop();
 				} catch (ClassNotFoundException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

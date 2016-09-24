@@ -17,13 +17,21 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+<<<<<<< HEAD
+=======
+import java.util.Collections;
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
+<<<<<<< HEAD
 public class Server implements Runnable
+=======
+public class Server implements Runnable 
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 {
 	
 	private ServerSocket serverSocket = null;
@@ -33,10 +41,17 @@ public class Server implements Runnable
 	private ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
 	private ArrayList<Answer> clientAnswers = new ArrayList<Answer>();
 	static int clientNum = 0;
+<<<<<<< HEAD
 	private boolean roundStarted = false;
 	private String sentQuestionAns = "";
 	private Timer timer;
 
+=======
+	static boolean roundStarted = false;
+	private String sentQuestionAns = "";
+	private Timer timer;
+	
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 	public Server(int port)
 	{
 		//TODO Binding and starting server
@@ -144,13 +159,34 @@ public class Server implements Runnable
 			        	timer.stop();
 			        	roundStarted = false;
 			        	
+<<<<<<< HEAD
 			        	
+=======
+			        	for(int i = 0; i < clientAnswers.size(); i++) {
+			        		int port = clients.get(i).getID();
+							try {
+								clients.get(i).sendMsg(randomizeClientAnswers(port).toString());
+							} catch (CloneNotSupportedException e) {
+								System.out.println("Error trying to randomize answers: " + e.getMessage());
+							}
+			        	}  	
+			        	
+			        	/*
+			        	 * handle opening new GUI and implement scoring based on individual client's selected answer
+			        	 */
+			        	
+			        	
+			        	
+			        	
+			        	clientAnswers.clear();
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 			       }
 			   }
 			};
 			
 			timer = new Timer(1000, actionListener);
 			timer.start();
+<<<<<<< HEAD
 		}
 		
 		// TODO 
@@ -169,6 +205,32 @@ public class Server implements Runnable
 					clientAnswers.add(new Answer(port, currClientAnswer));
 				}
 	
+=======
+			
+		}
+		
+		else if(roundStarted == true){
+			boolean found = false;
+			String port = input[0];
+			String currClientAnswer = input[1];
+			
+			if (clientAnswers.size() == 0) {
+				clientAnswers.add(new Answer(currClientAnswer, port));
+			}
+			else {
+	 			for(int i = 0; i < clientAnswers.size(); i++) {
+					
+					if(clientAnswers.get(i).port.trim().equals(port.trim())) {
+						System.out.println("Changing already stated Answer Array");
+						clientAnswers.get(i).answer = currClientAnswer;
+						found = true;
+					}
+				}
+	 			
+	 			if (found == false) {
+	 				clientAnswers.add(new Answer(currClientAnswer, port));
+	 			}
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 			}
 			
 			for(int i = 0; i < clientAnswers.size(); i++) {
@@ -178,7 +240,11 @@ public class Server implements Runnable
 		
 		else if(roundStarted == false){
 			for(int i = 0; i < clientNum; i++) {
+<<<<<<< HEAD
 				clients.get(i).sendMsg(input[0]);
+=======
+				clients.get(i).sendMsg(input[1]);
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 			}
 		}
 		
@@ -196,11 +262,19 @@ public class Server implements Runnable
 		
 		try {
 			clientToRemove.close();
+<<<<<<< HEAD
 		}
 		catch (IOException e) {
 			System.out.println("Error while trying to close thread: " + e.getMessage());
 			clientToRemove.stop();
 		}
+=======
+		}
+		catch (IOException e) {
+			System.out.println("Error while trying to close thread: " + e.getMessage());
+			clientToRemove.stop();
+		}
+>>>>>>> 10311479e885ecaaa12debd0549f227a8c26fcd0
 		
 		clients.remove(index);
 		clientNum--;
@@ -237,6 +311,30 @@ public class Server implements Runnable
 		for (int i= 0; i < q.questions.size(); i++) {
 			System.out.println(q.questions.get(i));
 		}
+	}
+	
+	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
+		
+		//new array has references to old array's objects so it's being updated. fuck us. trying to solve that by performing a deep copy.
+		ArrayList<Answer> a = cloneList(clientAnswers);
+		
+		for (int i = 0; i < clientAnswers.size(); i++){
+			//if (a.get(i).port.equals(String.valueOf(c.getID()))){
+			if (a.get(i).port.equals(String.valueOf(port))) {
+				a.get(i).answer = sentQuestionAns;
+			}
+		}
+		Collections.shuffle(a);
+		return a;
+	}
+	
+	public static ArrayList<Answer> cloneList(ArrayList<Answer> answers) {
+	    ArrayList<Answer> clonedList = new ArrayList<Answer>(answers.size());
+	    for (Answer a : answers) {
+	    	//pass the old answer to the copy constructor
+	        clonedList.add(new Answer(a));
+	    }
+	    return clonedList;
 	}
 	
 }

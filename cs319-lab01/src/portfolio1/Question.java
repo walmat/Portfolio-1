@@ -6,6 +6,7 @@ package portfolio1;
  */
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -14,7 +15,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Question {
+public class Question implements Serializable {
 	
 	public static ArrayList<Question> questions = new ArrayList<Question>(); //ArrayList for pulling questions
 	
@@ -148,4 +149,27 @@ public class Question {
 	
 ///////////////////////////////////////////////////
 
+	public String getQuestion() {
+		return question;
+	}
+
+	public void setQuestion(String question_) {
+		question = question_;
+	}
+
+	public String getRightAnswer() {
+		return rightAnswer;
+	}
+	
+	public void setRightAnswer(String rightAnswer_) {
+		rightAnswer = rightAnswer_;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category_) {
+		category = category_;
+	}
 }

@@ -30,6 +30,7 @@ import java.awt.Image;
 import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import java.awt.event.MouseAdapter;
@@ -48,6 +49,7 @@ public class ChatGUI extends JFrame
 	private String message;
 	private String user;
 	volatile boolean startRound = false;
+	private JButton btnSend; 
 
 
 	/**
@@ -77,7 +79,7 @@ public class ChatGUI extends JFrame
 		textField.setColumns(10);
 		user = username;
 		
-		JButton btnSend = new JButton("Send");
+		btnSend = new JButton("Send");
 		btnSend.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -95,8 +97,12 @@ public class ChatGUI extends JFrame
 			public void actionPerformed(ActionEvent e)
 			{
 				// TODO Set format of message and do some action to send it.
-				newTextMessage = true;
-				
+				if(textField.getText().trim() != " "){
+					newTextMessage = true;
+				}
+				else {
+					JOptionPane.showMessageDialog(new JFrame(),  "Please Enter a Valid Answer");
+				}
 			}
 		});
 		
@@ -124,7 +130,12 @@ public class ChatGUI extends JFrame
 				if(e.getKeyCode() == KeyEvent.VK_ENTER)
 				{
 					//TODO when user press Enter the message should be submit.
-					newTextMessage = true;
+					if(textField.getText().trim() != ""){
+						newTextMessage = true;
+					}
+					else {
+						JOptionPane.showMessageDialog(new JFrame(),  "Please Enter a Valid Answer");
+					}
 				}
 					
 			}
@@ -208,5 +219,9 @@ public class ChatGUI extends JFrame
 		}
 		textField.setText("");
 	}	
+	
+	public void changeBtnText(String txt) {
+		btnSend.setText(txt);
+	}
 }
 

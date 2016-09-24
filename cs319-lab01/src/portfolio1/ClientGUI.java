@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import java.awt.Font;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -38,13 +39,16 @@ public class ClientGUI extends JFrame
 	volatile boolean newTextMessage = false; 
 	volatile boolean newImageMessage = false;
 	private String message;
-
+	public boolean startRound;
+	private JButton btnSend;
+	private String user;
 
 	/**
 	 * Create the frame.
 	 */
-	public ClientGUI(String username, Color color)
+	public ClientGUI(String username, Color color, boolean type)
 	{
+		user = username;
 		setTitle(username);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -67,7 +71,7 @@ public class ClientGUI extends JFrame
 		contentPane.add(textField);
 		textField.setColumns(10);
 		
-		JButton btnSend = new JButton("Send");
+		btnSend = new JButton("Send");
 		btnSend.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -132,53 +136,56 @@ public class ClientGUI extends JFrame
 		JLabel lblTypeYourAnswer = new JLabel("Type your answer");
 		lblTypeYourAnswer.setBounds(17, 171, 134, 14);
 		contentPane.add(lblTypeYourAnswer);
+	
+		if(type == true) {
+			
+			JButton btnStart = new JButton("Start Round");
+			btnStart.setBounds(275, 20, 147, 23);
+			contentPane.add(btnStart);
+			btnStart.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							startRound = true;
+						}
+					});
+				}
+			});
+		}
 		
+		if(startRound == true) {
+			startRound = false;
+		}
+}
+
+public String getMessage()
+{		
+	if(newTextMessage == true) {
+		newTextMessage = false;
+		message = user + ": " + textField.getText();
+	}
+	else if(newImageMessage == true) {
+		newImageMessage = false;
 	}
 	
-	public String getMessage()
-	{		
-		if(newTextMessage == true) {
-			newTextMessage = false;
-			message = textField.getText();
-		}
-		else if(newImageMessage == true) {
-			newImageMessage = false;
-		}
-		
-		return message;
-	
+	return message;
+
+}
+
+public void recieveMessage(String message)
+{
+	if (!message.trim().equals("")){
+		chatArea.append(message + "\n");
 	}
+	textField.setText("");
+}	
+
+public void changeBtnText(String txt) {
+	btnSend.setText(txt);
+}
 	
-	public void recieveMessage(String message)
-	{
-		if (!message.trim().equals("")){
-			chatArea.append(message + "\n");
-		}
-		textField.setText("");
-	}
-	
-	public void showPicture(File picFile) {
 		
-		// Makes a new Jframe that displays the image recieved
-		JPanel imagePanel = new JPanel();
-	
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(picFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		  JLabel picLabel = new JLabel(new ImageIcon(image));
-		  imagePanel.add(picLabel);
-		  imagePanel.repaint();
-		  
-		JFrame frame = new JFrame("Recieved Picture");
-	  		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	  		frame.getContentPane().add(imagePanel);
-	  		frame.setSize(400, 400);
-	  		frame.setVisible(true);
-	}		
 	
 }
 

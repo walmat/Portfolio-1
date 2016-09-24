@@ -42,7 +42,7 @@ public class ClientThread extends Thread {
 		}
 	}
 	
-	public void sendMsg(String msg) {
+	public void sendMsg(Object msg) {
 		
 		try {
 			streamOut.writeObject(msg);
@@ -50,19 +50,6 @@ public class ClientThread extends Thread {
 		}
 		catch(IOException e){
 			JOptionPane.showMessageDialog(new JFrame(), "Failure trying to send message" + e.getMessage());
-			 server.remove(ID);
-			 stop();
-		}
-	}
-	
-	public void sendQuestion(Question q) {
-		
-		try {
-			streamOut.writeObject(q);
-			streamOut.flush();
-		}
-		catch(IOException e){
-			JOptionPane.showMessageDialog(new JFrame(), "Failure trying to send question" + e.getMessage());
 			 server.remove(ID);
 			 stop();
 		}

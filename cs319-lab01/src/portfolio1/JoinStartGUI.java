@@ -47,13 +47,13 @@ public class JoinStartGUI extends JFrame{
 		private String username;
 		private String password;
 		private String email;
-		private String color;
+		private Color color;
 		private String user;
 		
 		/**
 		 * Create the frame.
 		 */
-	public JoinStartGUI(String username_, String password_, String email_, String color_)
+	public JoinStartGUI(String username_, String password_, String email_, Color color_)
 		{
 			username = username_;
 			password = password_;

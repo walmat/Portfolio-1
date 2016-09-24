@@ -1,5 +1,11 @@
 package portfolio1;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 /**
  * @author Donavan Brooks and Matt Wall
  * 
@@ -8,35 +14,28 @@ package portfolio1;
  * 		- The text messages will be written to the chat area in your gui
  * 		- Images will be written to a file in your working directory and then will be sent to all the clients
  */
-
-import java.net.*;
-import java.nio.file.Files;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.math.BigInteger;
+import javax.swing.Timer;
 
 public class Server implements Runnable
 {
 	
 	private ServerSocket serverSocket = null;
 	private Thread mainThread = null;
-	private File file = new File("chat.txt");
-	private PrintWriter writer;
 	private ServerGUI frame;
-	private Thread guiMessageThread;
 	private static Question q;
-	private ClientThread clients[] = new ClientThread[5];
-	private int clientNum = 0;
+	private ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
+	private ArrayList<Answer> clientAnswers = new ArrayList<Answer>();
+	static int clientNum = 0;
 	private boolean roundStarted = false;
-	int timerCount = 0;
+	private String sentQuestionAns = "";
+	private Timer timer;
 
 	public Server(int port)
 	{
@@ -67,7 +66,7 @@ public class Server implements Runnable
 				}	
 				else {
 					addThread(serverSocket.accept());
-					clients[clientNum - 1].sendMsg("Connected to server");
+					clients.get(clientNum - 1).sendMsg("Connected to server");
 					System.out.println("Client Count: " + clientNum);
 				}
 			}
@@ -109,7 +108,7 @@ public class Server implements Runnable
 		//TODO Find Client
 		for(int i = 0; i < clientNum; i++)
 		{
-			if(clients[i].getID() == ID) {
+			if(clients.get(i).getID() == ID) {
 				return i;
 			}
 		}
@@ -119,27 +118,67 @@ public class Server implements Runnable
 	
 	public synchronized void handle(String[] input)
 	{
-		
 		// TODO new message, send to clients and then write it to history
-		if(input[0].equals(clients[0].getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
+		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
+			
+			Question sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+			//clientAnswers.add(new Answer("rightAnswer", sentQuestion.rightAnswer));
+			sentQuestionAns = sentQuestion.rightAnswer;
 			
 			for(int i = 0; i < clientNum; i++) {
-				String qMsg = Question.questions.get(0).getQuestion();
-				clients[i].sendMsg(qMsg);
+				
+				clients.get(i).sendMsg(sentQuestion);
 				roundStarted = true;
 			}
-		}
-		else if(roundStarted == false){
-			for(int i = 0; i < clientNum; i++) {
-				clients[i].sendMsg(input[0]);
-			}
+			
+			ActionListener actionListener = new ActionListener() {
+			    int timeRemaining = 10;
+			   
+			    public void actionPerformed(ActionEvent evt){
+			    	timeRemaining--;
+			    	for(int i = 0; i < clientNum; i++) {
+			    		clients.get(i).sendMsg(timeRemaining);
+			    	}
+			        
+			        if(timeRemaining <= 0){
+			        	timer.stop();
+			        	roundStarted = false;
+			        	
+			        	
+			       }
+			   }
+			};
+			
+			timer = new Timer(1000, actionListener);
+			timer.start();
 		}
 		
-		if(input[1].equals("Timer is done")) {
-			timerCount++;
-			System.out.println("TimerCount: " + timerCount);
-			if(timerCount == clientNum) { 
-				roundStarted = false;
+		// TODO 
+		if(roundStarted == true){
+			String port = input[0];
+			String currClientAnswer = input[1];
+			roundStarted = true;
+			for(int i = 0; i < clientAnswers.size(); i++) {
+				
+				if(clientAnswers.get(i).port.equals(port)) {
+					System.out.println("Changing already stated Answer Array");
+					clientAnswers.get(i).answer = currClientAnswer;
+				}
+				else{
+					System.out.println("Filling Answer Array");
+					clientAnswers.add(new Answer(port, currClientAnswer));
+				}
+	
+			}
+			
+			for(int i = 0; i < clientAnswers.size(); i++) {
+        		System.out.println("Answer: " + clientAnswers.get(i).toString());
+        	}
+		}
+		
+		else if(roundStarted == false){
+			for(int i = 0; i < clientNum; i++) {
+				clients.get(i).sendMsg(input[0]);
 			}
 		}
 		
@@ -152,38 +191,32 @@ public class Server implements Runnable
 	
 		int index = findClient(ID);
 		System.out.println("Client Count: " + clientNum) ;
-		System.out.println("Trying to remove Client " + index);
+		System.out.println("Trying to remove Client " + index);		
+		ClientThread clientToRemove = clients.get(index);
 		
-		if(index >= 0) {			
-			ClientThread clientToRemove = clients[index];
-			if(index < clientNum - 1){
-				for (int i = index + 1; i < clientNum ; i++) {
-					clients[i - 1] = clients[i];
-				}
-			}
-			
-			clientNum--;
-			try {
-				clientToRemove.close();
-			}
-			catch (IOException e) {
-				System.out.println("Error while trying to close thread: " + e.getMessage());
-				clientToRemove.stop();
-			}
+		try {
+			clientToRemove.close();
 		}
+		catch (IOException e) {
+			System.out.println("Error while trying to close thread: " + e.getMessage());
+			clientToRemove.stop();
+		}
+		
+		clients.remove(index);
+		clientNum--;
 		System.out.println("Client Count: " + clientNum) ;
 }
 
 	private void addThread(Socket socket)
 	{
 		//TODO add new client
-		if (clientNum < clients.length){  
+		if (clientNum < 5){  
 			System.out.println("Client accepted: " + socket);
-	         clients[clientNum] = new ClientThread(this, socket);
+	         clients.add(new ClientThread(this, socket));
 	         
 	         try{
-	        	 clients[clientNum].open();
-	        	 clients[clientNum].start();
+	        	 clients.get(clientNum).open();
+	        	 clients.get(clientNum).start();
 	        	 clientNum++; 
 	         }
 	         catch(IOException e){
@@ -197,7 +230,7 @@ public class Server implements Runnable
 	public static void main(String args[])
 	{
 		q = new Question();
-		q.main(args);
+		//q.main(args);
 		Server server = null;
 		server = new Server(1222);
 		

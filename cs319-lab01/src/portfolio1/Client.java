@@ -1,5 +1,6 @@
 package portfolio1;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,21 +34,21 @@ public class Client implements Runnable
 	private Thread thread = null;
 	private ObjectOutputStream streamOut = null;
 	private String username;
-	private ChatGUI frame = null;
+	private ClientGUI frame = null;
 	private ServerThread serverTH = null;
 	private DataInputStream console = null;
 	private boolean clientType;
+	private Color color;
 	private boolean roundStarted = false;
-	private Timer timer;
 	private boolean connected = false;
 	
 	// This determines whether they are trying to send a message or image file
-	private int functionality = 0;
 
-	public Client(String ipAddr, String username, String password, String email, String color, int serverPort, boolean type)
+	public Client(String ipAddr, String username, String password, String email, Color color_, int serverPort, boolean type)
 	{
 		this.username = username;
 		clientType =  type;
+		color = color_;
 		// set up the socket to connect to the gui
 		try
 		{
@@ -108,44 +109,30 @@ public void handleChat(Object msg)
 	{
 		//TODO
 		//If it is a text message just print it in the ui
-	
-	if(((String) msg).contains("?")){
-		
-		frame.recieveMessage((String)msg);
-		roundStarted = true;
-	
-		ActionListener actionListener = new ActionListener() {
-		    int timeRemaining = 10;
-
-		    public void actionPerformed(ActionEvent evt){
-		    	timeRemaining--;
-		        System.out.println("Time: " + timeRemaining);
-		        if(timeRemaining <= 0){
-		        	timer.stop();
-		        	roundStarted = false;
-		        	String[] timeDone = {String.valueOf(socket.getLocalPort()), "Timer is done"};
-		        	try {
-						streamOut.writeObject(timeDone);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-		       }
-		   }
-		};
-		
-		timer = new Timer(1000, actionListener);
-		timer.start();
+	if(msg instanceof Integer)
+	{
+		frame.changeBtnText(msg + "");
+		if((int) msg <= 0) {
+			frame.changeBtnText("Send");
+			roundStarted = false;
+		}
 	}
-		else  {
-			frame.recieveMessage((String)msg);
+	
+	else if(msg instanceof Question){
+		
+		frame.recieveMessage(((Question) msg).getQuestion());
+		roundStarted = true;
+	}
+	
+	else {
+		frame.recieveMessage((String)msg);
 		}
 	}
 	
 
 	public void start() throws IOException
 	{
-		frame = new ChatGUI(username, clientType);
+		frame = new ClientGUI(username, color, clientType);
 		frame.setVisible(true);
 	
 		streamOut = new ObjectOutputStream(socket.getOutputStream());

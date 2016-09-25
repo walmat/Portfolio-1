@@ -2,9 +2,7 @@ package portfolio1;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 /**
  * @author Donavan Brooks and Matt Wall
@@ -17,13 +15,14 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
-public class Server implements Runnable
+public class Server implements Runnable 
 {
 	
 	private ServerSocket serverSocket = null;
@@ -33,13 +32,13 @@ public class Server implements Runnable
 	private ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
 	private ArrayList<Answer> clientAnswers = new ArrayList<Answer>();
 	static int clientNum = 0;
-	private boolean roundStarted = false;
-	private String sentQuestionAns = "";
+	static boolean roundStarted = false;
+	private static String sentQuestionAns = "";
 	private Timer timer;
-
+	
 	public Server(int port)
 	{
-		//TODO Binding and starting server
+		//Binding and starting server
 		try
 		{
 			System.out.println("Binding to port " + port + ", please wait  ...");
@@ -57,7 +56,7 @@ public class Server implements Runnable
 
 	public void run()
 	{
-		//TODO wait for a client or show error
+		//hang and wait for a client or show error
 		while(true){
 			try {
 				System.out.println("Waiting for a client....");
@@ -75,8 +74,7 @@ public class Server implements Runnable
 				try {
 					stop();
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					System.out.println("Couldn't stop thread: " + e1.getMessage());
 				}
 			}
 		}
@@ -86,7 +84,8 @@ public class Server implements Runnable
 	{
 		frame = new ServerGUI();
 		frame.setVisible(true);
-		//TODO launch a thread to read for new messages by the server
+		
+		//launch a thread to read for new messages by the server
 		if(mainThread == null){
 			mainThread = new Thread(this);
 			mainThread.start();
@@ -96,7 +95,6 @@ public class Server implements Runnable
 	
 	public void stop() throws IOException
 	{
-		//TODO
 		if(mainThread != null) {
 			mainThread.stop();
 			mainThread = null;
@@ -105,7 +103,7 @@ public class Server implements Runnable
 
 	private int findClient(int ID)
 	{
-		//TODO Find Client
+		//Find Client
 		for(int i = 0; i < clientNum; i++)
 		{
 			if(clients.get(i).getID() == ID) {
@@ -118,7 +116,8 @@ public class Server implements Runnable
 	
 	public synchronized void handle(String[] input)
 	{
-		// TODO new message, send to clients and then write it to history
+		
+		//new message, send to clients and then write it to history
 		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
 			
 			Question sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
@@ -131,7 +130,8 @@ public class Server implements Runnable
 				roundStarted = true;
 			}
 			
-			ActionListener actionListener = new ActionListener() {
+			ActionListener actionListener = new ActionListener() 
+			{
 			    int timeRemaining = 10;
 			   
 			    public void actionPerformed(ActionEvent evt){
@@ -144,41 +144,84 @@ public class Server implements Runnable
 			        	timer.stop();
 			        	roundStarted = false;
 			        	
-			        	
+			        	for(int i = 0; i < clientAnswers.size(); i++) {
+			        		int port = clients.get(i).getID();
+			        		
+							try {
+								ArrayList<Answer> a = randomizeClientAnswers(port);
+								QuestionUI q = new QuestionUI(sentQuestion.question, a);
+								
+								clients.get(i).sendMsg(q);
+								roundStarted = true;
+								clients.get(i).sentAnswers = a;
+								
+								ActionListener alistener = new ActionListener() {
+								    int timeRemaining = 10 ;
+								   
+								    public void actionPerformed(ActionEvent evt){
+								    	timeRemaining--;
+								    	for(int i = 0; i < clientNum; i++) {
+								    		clients.get(i).sendMsg(timeRemaining);
+								    	}
+								        
+								        if(timeRemaining <= 0){
+								        	q.dispose();
+								        	timer.stop();
+								        	for(int i = 0; i < clientNum; i++)
+								        	{
+								        		clients.get(i).sendMsg(clientAnswers);
+								        	}
+								        	roundStarted = false;
+								        }
+								    }
+								};
+								timer = new Timer(1000, alistener);
+								timer.start();
+				
+						
+								//create a new timer to display the QuestionUI for a certain amount of time
+								
+							} catch (CloneNotSupportedException e) {
+								System.out.println("Error trying to randomize answers: " + e.getMessage());
+							}
+			        	}     	
+			        	clientAnswers.clear();
 			       }
 			   }
 			};
 			
 			timer = new Timer(1000, actionListener);
 			timer.start();
+			
 		}
 		
-		// TODO 
-		if(roundStarted == true){
+		else if(roundStarted == true){
+			boolean found = false;
 			String port = input[0];
 			String currClientAnswer = input[1];
-			roundStarted = true;
-			for(int i = 0; i < clientAnswers.size(); i++) {
-				
-				if(clientAnswers.get(i).port.equals(port)) {
-					System.out.println("Changing already stated Answer Array");
-					clientAnswers.get(i).answer = currClientAnswer;
-				}
-				else{
-					System.out.println("Filling Answer Array");
-					clientAnswers.add(new Answer(port, currClientAnswer));
-				}
-	
-			}
 			
-			for(int i = 0; i < clientAnswers.size(); i++) {
-        		System.out.println("Answer: " + clientAnswers.get(i).toString());
-        	}
+			if (clientAnswers.size() == 0) {
+				clientAnswers.add(new Answer(currClientAnswer, port));
+			}
+			else {
+	 			for(int i = 0; i < clientAnswers.size(); i++) {
+					
+					if(clientAnswers.get(i).port.trim().equals(port.trim())) {
+						System.out.println("Changing already stated Answer Array");
+						clientAnswers.get(i).answer = currClientAnswer;
+						found = true;
+					}
+				}
+	 			
+	 			if (found == false) {
+	 				clientAnswers.add(new Answer(currClientAnswer, port));
+	 			}
+			}
 		}
 		
 		else if(roundStarted == false){
 			for(int i = 0; i < clientNum; i++) {
-				clients.get(i).sendMsg(input[0]);
+				clients.get(i).sendMsg(input[1]);
 			}
 		}
 		
@@ -187,7 +230,7 @@ public class Server implements Runnable
 	
 	public synchronized void remove(int ID)
 	{
-		//TODO get the ClientThread, remove it from the array and then terminate it
+		//get the ClientThread, remove it from the array and then terminate it
 	
 		int index = findClient(ID);
 		System.out.println("Client Count: " + clientNum) ;
@@ -209,7 +252,7 @@ public class Server implements Runnable
 
 	private void addThread(Socket socket)
 	{
-		//TODO add new client
+		//add new client
 		if (clientNum < 5){  
 			System.out.println("Client accepted: " + socket);
 	         clients.add(new ClientThread(this, socket));
@@ -226,17 +269,36 @@ public class Server implements Runnable
 	      else
 	      	System.out.println("Maximum Number of clients has been reached");
 	}
-
-	public static void main(String args[])
-	{
-		q = new Question();
-		//q.main(args);
-		Server server = null;
-		server = new Server(1222);
+	
+	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
 		
-		for (int i= 0; i < q.questions.size(); i++) {
-			System.out.println(q.questions.get(i));
+		//solve copying by performing a deep copy.
+		ArrayList<Answer> a = cloneList(clientAnswers);
+		
+		for (int i = 0; i < clientAnswers.size(); i++){
+			if (a.get(i).port.equals(String.valueOf(port))) {
+				a.get(i).answer = sentQuestionAns;
+			}
 		}
+		Collections.shuffle(a);
+		return a;
+	}
+	
+	public static ArrayList<Answer> cloneList(ArrayList<Answer> answers) {
+	    ArrayList<Answer> clonedList = new ArrayList<Answer>(answers.size());
+	    for (Answer a : answers) {
+	    	//pass the old answer to the copy constructor
+	        clonedList.add(new Answer(a));
+	    }
+	    return clonedList;
+	}
+	
+	public static int findRightAnswer(ArrayList<Answer> a){
+		int i = 0; 
+		for (i = 0; i < a.size(); i++){
+			if (a.get(i).answer.equals(sentQuestionAns)) break;
+		}
+		return i;
 	}
 	
 }

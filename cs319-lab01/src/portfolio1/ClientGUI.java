@@ -163,7 +163,7 @@ public String getMessage()
 {		
 	if(newTextMessage == true) {
 		newTextMessage = false;
-		message = user + ": " + textField.getText();
+		message = textField.getText();
 	}
 	else if(newImageMessage == true) {
 		newImageMessage = false;

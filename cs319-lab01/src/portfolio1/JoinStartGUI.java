@@ -10,6 +10,9 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -30,6 +33,7 @@ import java.awt.Image;
 import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import java.awt.event.MouseAdapter;
@@ -49,6 +53,7 @@ public class JoinStartGUI extends JFrame{
 		private String email;
 		private Color color;
 		private String user;
+		private static Server server =  null;
 		
 		/**
 		 * Create the frame.
@@ -82,7 +87,7 @@ public class JoinStartGUI extends JFrame{
 					EventQueue.invokeLater(new Runnable() {
 						public void run() {
 							try {
-								Server server = new Server(1222);
+								server = new Server(1222);
 								Client client = new Client("localhost", username, password, email, color, 1222, true);
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -121,7 +126,7 @@ public class JoinStartGUI extends JFrame{
 							try {
 								Client client = new Client(textField.getText(), username, password, email, color, 1222, false);
 							} catch (Exception e) {
-								e.printStackTrace();
+								System.out.println("unable to create client: " + e.getMessage());
 							}
 						}
 					});
@@ -166,5 +171,5 @@ public class JoinStartGUI extends JFrame{
 			}
 			textField.setText("");
 		}
-		
+
 	}

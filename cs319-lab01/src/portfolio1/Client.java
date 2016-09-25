@@ -47,6 +47,7 @@ public class Client implements Runnable
 	private Server s;
 	private QuestionUI answerInput;
 	private String fakeAnswer;
+	private String receivedQuestion;
 	private int score = 0;
 	
 	// This determines whether they are trying to send a message or image file
@@ -108,6 +109,17 @@ public class Client implements Runnable
 					}
 				}
 				
+				if(answerInput != null && answerInput.newAnswerMessage == true) {
+					try {
+						message[1] = answerInput.getMessage();
+						streamOut.writeObject(message);
+						streamOut.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
 				if(roundStarted == true) {
 					fakeAnswer = frame.getMessage();
 				}
@@ -132,45 +144,25 @@ public void handleChat(Object msg)
 			frame.changeBtnText("Send");
 			roundStarted = false;
 			answerRound = false;
-//			if(answerInput != null) {
-//				
-//				answerInput.dispose();
-//			}
+			if(answerInput != null) {
+				answerInput.dispose();
+			}
 		}
 	}
 	
 	else if(msg instanceof Question){
 		
 		frame.recieveMessage(((Question) msg).getQuestion());
+		receivedQuestion = ((Question) msg).getQuestion();
 		roundStarted = true;
 	}
 	
-	else if (msg instanceof QuestionUI){
-		answerInput = (QuestionUI) msg;
+	else if(msg instanceof ArrayList<?>) {
+		
+		answerInput = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg);
 		answerInput.setVisible(true);
-		System.out.println("answerInput: " + answerInput);
 		answerRound = true;
 	}
-	
-//	else if(msg instanceof ArrayList<?>) {
-//		
-//		ArrayList<Answer> originalAnswers = new ArrayList<Answer>();
-//		originalAnswers = answerInput.getAnswersToQuestions();
-//		
-//		for(int i = 0; i < ((ArrayList<Answer>) msg).size(); i++) {
-//			if((this.socket.getLocalPort() + "").equals(((ArrayList<Answer>) msg).get(i).port) 
-//					&& ){
-//				score += answerInput.validateAnswer()
-//			}
-//			
-//			else {
-//				if(answerInput.chosenAnswer.equals(((ArrayList<Answer>) msg).get(i).answer)) {
-//					score += 1;
-//				}
-//			}
-//		}
-//		
-//	}
 	
 	else {
 		frame.recieveMessage((String)msg);
@@ -220,7 +212,6 @@ public void handleChat(Object msg)
 
 	}
 }
-
 
 	class ServerThread extends Thread {
 		private Socket sock = null;

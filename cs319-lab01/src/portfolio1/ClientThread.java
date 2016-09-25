@@ -12,12 +12,14 @@ import javax.swing.JOptionPane;
 public class ClientThread extends Thread {
 	
 	private Server server = null;
-	private Socket socket = null;
+	public Socket socket = null;
 	private int ID;
 	private ObjectInputStream streamIn = null;
 	private ObjectOutputStream streamOut = null;
 	private boolean acceptAnswers = true;
 	public ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
+	public String createdFakeAnswer;
+	public int score = 0;
 	
 	public ClientThread(Server server_, Socket socket_)
 	{

@@ -34,6 +34,7 @@ public class Server implements Runnable
 	static int clientNum = 0;
 	static boolean roundStarted = false;
 	private static String sentQuestionAns = "";
+	private Question sentQuestion; 
 	private Timer timer;
 	
 	public Server(int port)
@@ -116,11 +117,19 @@ public class Server implements Runnable
 	
 	public synchronized void handle(String[] input)
 	{
+	
 		
 		//new message, send to clients and then write it to history
 		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
 			
-			Question sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+			try {
+				sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+			}catch(IllegalArgumentException e) {
+				JOptionPane.showMessageDialog(new JFrame(), "Sorry, there seems to be no questions in our list."
+															+ " Check your internet connection and try again.");
+				System.exit(-1);
+			}
+			
 			//clientAnswers.add(new Answer("rightAnswer", sentQuestion.rightAnswer));
 			sentQuestionAns = sentQuestion.rightAnswer;
 			
@@ -144,55 +153,56 @@ public class Server implements Runnable
 			        	timer.stop();
 			        	roundStarted = false;
 			        	
-			        	for(int i = 0; i < clientAnswers.size(); i++) {
+			        	for(int i = 0; i < clientNum; i++) {
 			        		int port = clients.get(i).getID();
 			        		
 							try {
 								ArrayList<Answer> a = randomizeClientAnswers(port);
-								QuestionUI q = new QuestionUI(sentQuestion.question, a);
-								
-								clients.get(i).sendMsg(q);
-								roundStarted = true;
+								//QuestionUI q = new QuestionUI(sentQuestion.question, a);
+								//It now sends the arrayList not the UI because it was causing the UI not to record button clicks
+								clients.get(i).sendMsg(a);
 								clients.get(i).sentAnswers = a;
-								
-								ActionListener alistener = new ActionListener() {
-								    int timeRemaining = 10 ;
-								   
-								    public void actionPerformed(ActionEvent evt){
-								    	timeRemaining--;
-								    	for(int i = 0; i < clientNum; i++) {
-								    		clients.get(i).sendMsg(timeRemaining);
-								    	}
-								        
-								        if(timeRemaining <= 0){
-								        	q.dispose();
-								        	timer.stop();
-								        	for(int i = 0; i < clientNum; i++)
-								        	{
-								        		clients.get(i).sendMsg(clientAnswers);
-								        	}
-								        	roundStarted = false;
-								        }
-								    }
-								};
-								timer = new Timer(1000, alistener);
-								timer.start();
-				
-						
+								roundStarted = true;
 								//create a new timer to display the QuestionUI for a certain amount of time
 								
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
 							}
+							
 			        	}     	
-			        	clientAnswers.clear();
+			        	
+			        	//clientAnswers.clear();	
+			        	
+			        	ActionListener alistener = new ActionListener() {
+						    int timeRemaining = 10;
+						    
+						    public void actionPerformed(ActionEvent evt){
+						    	timeRemaining--;
+						    	for(int i = 0; i < clientNum; i++) {
+						    		clients.get(i).sendMsg(timeRemaining);
+						    	}
+						        
+						        if(timeRemaining <= 0){
+						        	timer.stop();
+						        	for(int i = 0; i < clientNum; i++)
+						        	{
+						        		calculateScore(clients.get(i));
+						        		clients.get(i).sendMsg("Score: " + clients.get(i).score);
+						        	}
+						        	roundStarted = false;
+						        }
+						    }
+						};
+						timer = new Timer(1000, alistener);
+						timer.start();
+			        	
 			       }
 			   }
 			};
 			
 			timer = new Timer(1000, actionListener);
 			timer.start();
-			
+			clientAnswers.clear();	
 		}
 		
 		else if(roundStarted == true){
@@ -221,7 +231,7 @@ public class Server implements Runnable
 		
 		else if(roundStarted == false){
 			for(int i = 0; i < clientNum; i++) {
-				clients.get(i).sendMsg(input[1]);
+				clients.get(i).sendMsg(input[2] + ": " + input[1]);
 			}
 		}
 		
@@ -277,6 +287,7 @@ public class Server implements Runnable
 		
 		for (int i = 0; i < clientAnswers.size(); i++){
 			if (a.get(i).port.equals(String.valueOf(port))) {
+				clients.get(i).createdFakeAnswer = a.get(i).answer;
 				a.get(i).answer = sentQuestionAns;
 			}
 		}
@@ -300,5 +311,29 @@ public class Server implements Runnable
 		}
 		return i;
 	}
+	
+	public void calculateScore(ClientThread c) { 
+		
+		String clientPort = String.valueOf(c.getID());
+		
+		System.out.println("RoundStarted " + roundStarted);
+		for(int j = 0; j < clientAnswers.size(); j++) {
+			
+			// If you chose the right answer increment your score by
+			if(clientPort.equals(clientAnswers.get(j).port)) {
+				if(clientAnswers.get(j).answer.equals(sentQuestionAns)){
+					System.out.println("You submitted the right answer");
+					c.score += 2;
+				}
+			}
+			
+			// If anybody else chose your answer increment your score by 1
+			else if(c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
+			System.out.println("Somebody clicked your answer");
+				c.score += 1;
+			}
+		}
+	}
+
 	
 }

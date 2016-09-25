@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -42,6 +43,12 @@ public class ClientGUI extends JFrame
 	public boolean startRound;
 	private JButton btnSend;
 	private String user;
+	
+	//Score labels
+	JLabel lblScore1;
+	JLabel lblScore2;
+	JLabel lblScore3;
+	JLabel lblScore4;
 
 	/**
 	 * Create the frame.
@@ -51,7 +58,7 @@ public class ClientGUI extends JFrame
 		user = username;
 		setTitle(username);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 700, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -157,6 +164,19 @@ public class ClientGUI extends JFrame
 		if(startRound == true) {
 			startRound = false;
 		}
+		
+		// Initializing score labels
+		lblScore1 = new JLabel();
+		lblScore1.setBounds(450, 30, 161, 16);
+
+		lblScore2 = new JLabel();
+		lblScore2.setBounds(450, 60, 161, 16);
+	
+		lblScore3 = new JLabel();
+		lblScore3.setBounds(450, 90, 161, 16);
+	
+		lblScore4 = new JLabel();
+		lblScore4.setBounds(450, 120, 161, 16);
 }
 
 public String getMessage()
@@ -185,6 +205,29 @@ public void changeBtnText(String txt) {
 	btnSend.setText(txt);
 }
 	
+// Updates UI to display everyones scores
+public void updateScoreUI(ArrayList<Score> scores) { 
+	
+	if(scores.size() >= 1) {
+		lblScore1.setText(scores.get(0).username + ": " + scores.get(0).score);
+		contentPane.add(lblScore1);
+	}
+	
+	if(scores.size() >= 2) {
+		lblScore2.setText(scores.get(1).username + ": " + scores.get(1).score);
+		contentPane.add(lblScore2);
+	}
+	
+	if(scores.size() >= 3) {
+		lblScore3.setText(scores.get(2).username + ": " + scores.get(2).score);
+		contentPane.add(lblScore3);
+	}
+	
+	if(scores.size() >= 4) {
+		lblScore4.setText(scores.get(3).username + ": " + scores.get(3).score);
+		contentPane.add(lblScore4);
+	}
+}
 		
 	
 }

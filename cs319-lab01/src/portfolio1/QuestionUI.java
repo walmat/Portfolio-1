@@ -164,26 +164,8 @@ public class QuestionUI extends JFrame
 		lblTimer.setBounds(20, 160, 50, 50);
 		contentPane.add(lblTimer );
 		
-//		if (numAnswer == 1) {
-//			contentPane.add(button1);
-//		}
-//		else if (numAnswer == 2) {
-//			contentPane.add(button1);
-//			contentPane.add(button2);
-//		}
-//		else if (numAnswer == 3) {
-//			contentPane.add(button1);
-//			contentPane.add(button2);
-//			contentPane.add(button3);
-//		}
-//		else {
-//			contentPane.add(button1);
-//			contentPane.add(button2);
-//			contentPane.add(button3);
-//			contentPane.add(button4);
-//		}
-		
 	}
+	
 	public static void main(String[] args) {
 		String q = "What the fuck";
 		ArrayList<Answer> a = new ArrayList<Answer>();
@@ -198,7 +180,6 @@ public class QuestionUI extends JFrame
 		if(newAnswerMessage == true) {
 			newAnswerMessage = false;
 		}
-		System.out.println("Got message");
 		return chosenAnswer;
 	}
 	

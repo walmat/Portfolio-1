@@ -77,7 +77,7 @@ public class Client implements Runnable
 	{
 		//check for a new message, once we receive it, streamOut will send it to the server
 		while(thread != null){
-			String[] message = new String[2];
+			String[] message = new String[3];
 			
 			if(frame != null) { 
 				
@@ -87,6 +87,7 @@ public class Client implements Runnable
 				
 					try{
 						message[1] = frame.getMessage();
+						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
 					}catch (IOException e) {
@@ -99,6 +100,7 @@ public class Client implements Runnable
 					
 					try {
 						message[1] = "....Start....";
+						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
 						frame.startRound = false;
@@ -112,6 +114,7 @@ public class Client implements Runnable
 				if(answerInput != null && answerInput.newAnswerMessage == true) {
 					try {
 						message[1] = answerInput.getMessage();
+						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
 					} catch (IOException e) {
@@ -159,9 +162,18 @@ public void handleChat(Object msg)
 	
 	else if(msg instanceof ArrayList<?>) {
 		
-		answerInput = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg);
-		answerInput.setVisible(true);
-		answerRound = true;
+		if(((ArrayList<?>) msg).get(0) instanceof Answer) {
+			answerInput = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg);
+			answerInput.setVisible(true);
+			answerRound = true;
+		}
+		
+		else if(((ArrayList<?>) msg).get(0) instanceof Score) {
+			System.out.println(((ArrayList<Score>) msg).toString());
+			frame.updateScoreUI(((ArrayList<Score>) msg));
+			frame.revalidate();
+			frame.repaint();
+		}
 	}
 	
 	else {
@@ -177,6 +189,8 @@ public void handleChat(Object msg)
 		frame.setVisible(true);
 	
 		streamOut = new ObjectOutputStream(socket.getOutputStream());
+		String[] connectedMsg = {String.valueOf(socket.getLocalPort()) , "Connected", username};
+		streamOut.writeObject(connectedMsg);
 		//System.out.println("Ouput Stream created");
 		
 		if(thread == null) {

@@ -166,12 +166,20 @@ public class QuestionUI extends JFrame
 		
 	}
 	
+	public static void main(String[] args) {
+		String q = "What the fuck";
+		ArrayList<Answer> a = new ArrayList<Answer>();
+		a.add(new Answer("Cool", "1234"));
+		a.add(new Answer("fuck", "4321"));
+		QuestionUI ui = new QuestionUI(q, a);
+		ui.setVisible(true);
+	}
+	
 	public String getMessage()
 	{		
 		if(newAnswerMessage == true) {
 			newAnswerMessage = false;
 		}
-		System.out.println("Got message");
 		return chosenAnswer;
 	}
 	
@@ -187,3 +195,4 @@ public class QuestionUI extends JFrame
 		lblTimer.setText(msg);
 	}
 }
+

@@ -33,7 +33,7 @@ public class Server implements Runnable
 	private ArrayList<Answer> clientAnswers = new ArrayList<Answer>();
 	static int clientNum = 0;
 	static boolean roundStarted = false;
-	private String sentQuestionAns = "";
+	private static String sentQuestionAns = "";
 	private Timer timer;
 	
 	public Server(int port)
@@ -130,7 +130,8 @@ public class Server implements Runnable
 				roundStarted = true;
 			}
 			
-			ActionListener actionListener = new ActionListener() {
+			ActionListener actionListener = new ActionListener() 
+			{
 			    int timeRemaining = 10;
 			   
 			    public void actionPerformed(ActionEvent evt){
@@ -147,20 +148,43 @@ public class Server implements Runnable
 			        		int port = clients.get(i).getID();
 			        		
 							try {
-								QuestionUI q = new QuestionUI(sentQuestion.question, randomizeClientAnswers(port));
+								ArrayList<Answer> a = randomizeClientAnswers(port);
+								QuestionUI q = new QuestionUI(sentQuestion.question, a);
+								
 								clients.get(i).sendMsg(q);
-								q.setVisible(true);
-								//System.out.println(randomizeClientAnswers(port));
+								roundStarted = true;
+								clients.get(i).sentAnswers = a;
+								
+								ActionListener alistener = new ActionListener() {
+								    int timeRemaining = 10 ;
+								   
+								    public void actionPerformed(ActionEvent evt){
+								    	timeRemaining--;
+								    	for(int i = 0; i < clientNum; i++) {
+								    		clients.get(i).sendMsg(timeRemaining);
+								    	}
+								        
+								        if(timeRemaining <= 0){
+								        	q.dispose();
+								        	timer.stop();
+								        	for(int i = 0; i < clientNum; i++)
+								        	{
+								        		clients.get(i).sendMsg(clientAnswers);
+								        	}
+								        	roundStarted = false;
+								        }
+								    }
+								};
+								timer = new Timer(1000, alistener);
+								timer.start();
+				
+						
+								//create a new timer to display the QuestionUI for a certain amount of time
+								
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
 							}
-			        	}  	
-			        	
-			        	/*
-			        	 * handle opening new GUI and implement scoring based on individual client's selected answer
-			        	 */
-			        	
-			        	
+			        	}     	
 			        	clientAnswers.clear();
 			       }
 			   }
@@ -267,6 +291,14 @@ public class Server implements Runnable
 	        clonedList.add(new Answer(a));
 	    }
 	    return clonedList;
+	}
+	
+	public static int findRightAnswer(ArrayList<Answer> a){
+		int i = 0; 
+		for (i = 0; i < a.size(); i++){
+			if (a.get(i).answer.equals(sentQuestionAns)) break;
+		}
+		return i;
 	}
 	
 }

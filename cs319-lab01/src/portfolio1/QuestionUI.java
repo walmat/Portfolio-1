@@ -37,16 +37,21 @@ public class QuestionUI extends JFrame
 	private JPanel contentPane;
 	volatile boolean newTextMessage = false; 
 	volatile boolean newImageMessage = false;
+	public String chosenAnswer;
 	private String message;
 	private JTextPane questionField;
+	JLabel lblTimer;
+	public int numAnswer;
+	public ArrayList<Answer> a;
 
 	/**
 	 * Create the frame.
 	 */
 	public QuestionUI(String q, ArrayList<Answer> answers)
 	{
-		int numAnswer = answers.size();
+		numAnswer = answers.size();
 		System.out.println(numAnswer);
+		a = answers;
 		
 		setTitle("Questions");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +73,7 @@ public class QuestionUI extends JFrame
 		button1.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-
+				chosenAnswer = button1.getText();
 			}
 		});
 		button1.setBounds(51, 150, 163, 23);
@@ -94,7 +99,7 @@ public class QuestionUI extends JFrame
 		button2.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-
+				chosenAnswer = button2.getText();
 			}
 		});
 		button2.setBounds(226, 150, 163, 23);
@@ -108,7 +113,7 @@ public class QuestionUI extends JFrame
 		button3.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-
+				chosenAnswer = button3.getText();
 			}
 		});
 		button3.setBounds(51, 201, 163, 23);
@@ -122,7 +127,7 @@ public class QuestionUI extends JFrame
 		button4.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-
+				chosenAnswer = button4.getText();
 			}
 		});
 		button4.setBounds(226, 201, 163, 23);
@@ -141,6 +146,11 @@ public class QuestionUI extends JFrame
 		questionField.setBounds(24, 18, 404, 42);
 		questionField.setText(q);
 		contentPane.add(questionField);
+		
+
+		lblTimer = new JLabel();
+		lblTimer.setBounds(20, 160, 50, 50);
+		contentPane.add(lblTimer );
 		
 //		if (numAnswer == 1) {
 //			contentPane.add(button1);
@@ -185,32 +195,37 @@ public class QuestionUI extends JFrame
 		questionField.setText("");
 	}
 	
-	public void showPicture(File picFile) {
-		
-		// Makes a new Jframe that displays the image recieved
-		JPanel imagePanel = new JPanel();
-	
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(picFile);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public int validateAnswer(String sentAns) {
+		int score = 0;
+		for (int i = 0; i < a.size(); i++) {
+			if(sentAns.equals(chosenAnswer)){
+				score = 2;
+			}
+			else 
+				score = 0;
 		}
-		  JLabel picLabel = new JLabel(new ImageIcon(image));
-		  imagePanel.add(picLabel);
-		  imagePanel.repaint();
-		  
-		JFrame frame = new JFrame("Recieved Picture");
-	  		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	  		frame.getContentPane().add(imagePanel);
-	  		frame.setSize(400, 400);
-	  		frame.setVisible(true);
-	}		
+		
+		return score;
+	}
 	
-	public void changeButtonText(String msg) {
-		
-		
+	public String findAnswerOwner(){
+		String j = "";
+		for (int i = 0; i < a.size(); i++) {
+			if (chosenAnswer.equals(a.get(i).answer)){
+				j = a.get(i).port;
+				break;
+			}
+			j = "....right....";
+		}
+		return j;
+	}
+	
+	public void changeTimerText(String msg) {
+		lblTimer.setText(msg);
+	}
+	
+	public ArrayList<Answer> getAnswersToQuestions() {
+		return a;
 	}
 }
 

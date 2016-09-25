@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -16,6 +17,7 @@ public class ClientThread extends Thread {
 	private ObjectInputStream streamIn = null;
 	private ObjectOutputStream streamOut = null;
 	private boolean acceptAnswers = true;
+	public ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
 	
 	public ClientThread(Server server_, Socket socket_)
 	{

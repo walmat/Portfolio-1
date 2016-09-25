@@ -23,6 +23,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+
 import javax.swing.Timer;
 
 import javax.swing.JFrame;
@@ -40,8 +42,12 @@ public class Client implements Runnable
 	private boolean clientType;
 	public Color color;
 	private boolean roundStarted = false;
+	private boolean answerRound = false;
 	private boolean connected = false;
 	private Server s;
+	private QuestionUI answerInput;
+	private String fakeAnswer;
+	private int score = 0;
 	
 	// This determines whether they are trying to send a message or image file
 
@@ -101,6 +107,10 @@ public class Client implements Runnable
 						stop();
 					}
 				}
+				
+				if(roundStarted == true) {
+					fakeAnswer = frame.getMessage();
+				}
 			}
 		}
 	}
@@ -108,13 +118,24 @@ public class Client implements Runnable
 	
 public void handleChat(Object msg)
 	{
-		//If it is a text message just print it in the ui
+	//If it is a text message just print it in the ui
 	if(msg instanceof Integer)
 	{
-		frame.changeBtnText(msg + "");
+		if(answerRound == true) {
+			answerInput.changeTimerText(msg + "");
+		}
+		else {
+			frame.changeBtnText(msg + "");
+		}
+		
 		if((int) msg <= 0) {
 			frame.changeBtnText("Send");
 			roundStarted = false;
+			answerRound = false;
+//			if(answerInput != null) {
+//				
+//				answerInput.dispose();
+//			}
 		}
 	}
 	
@@ -125,8 +146,31 @@ public void handleChat(Object msg)
 	}
 	
 	else if (msg instanceof QuestionUI){
-		((QuestionUI) msg).setVisible(true);
+		answerInput = (QuestionUI) msg;
+		answerInput.setVisible(true);
+		System.out.println("answerInput: " + answerInput);
+		answerRound = true;
 	}
+	
+//	else if(msg instanceof ArrayList<?>) {
+//		
+//		ArrayList<Answer> originalAnswers = new ArrayList<Answer>();
+//		originalAnswers = answerInput.getAnswersToQuestions();
+//		
+//		for(int i = 0; i < ((ArrayList<Answer>) msg).size(); i++) {
+//			if((this.socket.getLocalPort() + "").equals(((ArrayList<Answer>) msg).get(i).port) 
+//					&& ){
+//				score += answerInput.validateAnswer()
+//			}
+//			
+//			else {
+//				if(answerInput.chosenAnswer.equals(((ArrayList<Answer>) msg).get(i).answer)) {
+//					score += 1;
+//				}
+//			}
+//		}
+//		
+//	}
 	
 	else {
 		frame.recieveMessage((String)msg);

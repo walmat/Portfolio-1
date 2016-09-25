@@ -4,6 +4,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
+=======
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -32,16 +39,32 @@ public class ClientGUI extends JFrame {
 	public boolean startRound;
 	private JButton btnSend;
 	private String user;
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
 	private JTextField scoreField;
+=======
+	
+	//Score labels
+	JLabel lblScore1;
+	JLabel lblScore2;
+	JLabel lblScore3;
+	JLabel lblScore4;
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 
 	/**
 	 * Create the frame.
 	 */
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
 	public ClientGUI(String username, Color color, boolean type) {
 		user = username;
 		setTitle(user);
+=======
+	public ClientGUI(String username, Color color, boolean type)
+	{
+		user = username;
+		setTitle(username);
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 700, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -60,7 +83,11 @@ public class ClientGUI extends JFrame {
 		textField.setBounds(24, 197, 306, 23);
 		contentPane.add(textField);
 		textField.setColumns(10);
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
 
+=======
+		
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 		btnSend = new JButton("Send");
 		btnSend.addMouseListener(new MouseAdapter() {
 			@Override
@@ -119,6 +146,7 @@ public class ClientGUI extends JFrame {
 		JLabel lblTypeYourAnswer = new JLabel("Type your fake answer");
 		lblTypeYourAnswer.setBounds(17, 171, 161, 14);
 		contentPane.add(lblTypeYourAnswer);
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
 
 		scoreField = new JTextField();
 		scoreField.setEditable(false);
@@ -133,6 +161,11 @@ public class ClientGUI extends JFrame {
 
 		if (type == true) {
 
+=======
+	
+		if(type == true) {
+			
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 			JButton btnStart = new JButton("Start Round");
 			btnStart.setBounds(275, 20, 147, 23);
 			contentPane.add(btnStart);
@@ -147,6 +180,7 @@ public class ClientGUI extends JFrame {
 				}
 			});
 		}
+<<<<<<< HEAD:Portfolio One/src/ClientGUI.java
 
 		if (startRound == true) {
 			startRound = false;
@@ -179,4 +213,76 @@ public class ClientGUI extends JFrame {
 	public void changeScoreText(String score){
 		scoreField.setText(score + "");
 	}
+=======
+		
+		if(startRound == true) {
+			startRound = false;
+		}
+		
+		// Initializing score labels
+		lblScore1 = new JLabel();
+		lblScore1.setBounds(450, 30, 161, 16);
+
+		lblScore2 = new JLabel();
+		lblScore2.setBounds(450, 60, 161, 16);
+	
+		lblScore3 = new JLabel();
+		lblScore3.setBounds(450, 90, 161, 16);
+	
+		lblScore4 = new JLabel();
+		lblScore4.setBounds(450, 120, 161, 16);
+}
+
+public String getMessage()
+{		
+	if(newTextMessage == true) {
+		newTextMessage = false;
+		message = textField.getText();
+	}
+	else if(newImageMessage == true) {
+		newImageMessage = false;
+	}
+	
+	return message;
+
+}
+
+public void recieveMessage(String message)
+{
+	if (!message.trim().equals("")){
+		chatArea.append(message + "\n");
+	}
+	textField.setText("");
+}	
+
+public void changeBtnText(String txt) {
+	btnSend.setText(txt);
+}
+	
+// Updates UI to display everyones scores
+public void updateScoreUI(ArrayList<Score> scores) { 
+	
+	if(scores.size() >= 1) {
+		lblScore1.setText(scores.get(0).username + ": " + scores.get(0).score);
+		contentPane.add(lblScore1);
+	}
+	
+	if(scores.size() >= 2) {
+		lblScore2.setText(scores.get(1).username + ": " + scores.get(1).score);
+		contentPane.add(lblScore2);
+	}
+	
+	if(scores.size() >= 3) {
+		lblScore3.setText(scores.get(2).username + ": " + scores.get(2).score);
+		contentPane.add(lblScore3);
+	}
+	
+	if(scores.size() >= 4) {
+		lblScore4.setText(scores.get(3).username + ": " + scores.get(3).score);
+		contentPane.add(lblScore4);
+	}
+}
+		
+	
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientGUI.java
 }

@@ -16,9 +16,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Question implements Serializable {
+<<<<<<< HEAD:Portfolio One/src/Question.java
 
 	private static final long serialVersionUID = 1L;
 
+=======
+	
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/Question.java
 	public static ArrayList<Question> questions = new ArrayList<Question>(); //ArrayList for pulling questions
 	
 	//globals for access outside of Questions.java

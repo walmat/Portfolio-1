@@ -14,11 +14,17 @@ public class ClientThread extends Thread {
 	private Server server = null;
 	public Socket socket = null;
 	private int ID;
+	public String username; 
 	private ObjectInputStream streamIn = null;
 	private ObjectOutputStream streamOut = null;
+<<<<<<< HEAD:Portfolio One/src/ClientThread.java
 	private boolean acceptAnswers = true;
 	public ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
 	public String createdFakeAnswer;
+=======
+	public  ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
+	public  String createdFakeAnswer;
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientThread.java
 	public int score = 0;
 	
 	public ClientThread(Server server_, Socket socket_)
@@ -59,12 +65,31 @@ public class ClientThread extends Thread {
 		}
 	}
 	
+<<<<<<< HEAD:Portfolio One/src/ClientThread.java
 	public String getScore(){
 		return score + "";
 	}
 	
+=======
+>>>>>>> Donavan:cs319-lab01/src/portfolio1/ClientThread.java
 	public int getID(){
 		return ID;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	
+	public int getScore() {
+		return score;
+	}
+	
+	public ArrayList<Answer> getSentAnswers() {
+		return sentAnswers;
+	}
+	
+	public String getFakeAnswer() {
+		return createdFakeAnswer;
 	}
 	
 	public void open() throws IOException

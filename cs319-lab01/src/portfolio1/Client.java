@@ -43,7 +43,7 @@ public class Client implements Runnable
 	public Color color;
 	private boolean roundStarted = false;
 	private boolean answerRound = false;
-	private boolean connected = false;
+	private boolean notConnected = false;
 	private Server s;
 	private QuestionUI answerInput;
 	private String fakeAnswer;
@@ -175,29 +175,34 @@ public void handleChat(Object msg)
 			frame.repaint();
 		}
 	}
-	
+	else if(msg.equals("Server full, or the game is in the middle of a round. Try Again later.")) {notConnected = true;}
 	else {
-		frame.recieveMessage((String)msg);
+			frame.recieveMessage((String)msg);
 		}
 	}
 	
 
 	public void start() throws IOException
 	{
-	
-		frame = new ClientGUI(username, color, clientType);
-		frame.setVisible(true);
-	
-		streamOut = new ObjectOutputStream(socket.getOutputStream());
-		String[] connectedMsg = {String.valueOf(socket.getLocalPort()) , "Connected", username};
-		streamOut.writeObject(connectedMsg);
-		//System.out.println("Ouput Stream created");
-		
-		if(thread == null) {
-			serverTH = new ServerThread(this, socket);
-			thread = new Thread(this);
-			thread.start();
+		if(notConnected != true) {
+			frame = new ClientGUI(username, color, clientType);
+			frame.setVisible(true);
+			
+			streamOut = new ObjectOutputStream(socket.getOutputStream());
+			String[] connectedMsg = {String.valueOf(socket.getLocalPort()) , "Connected", username};
+			streamOut.writeObject(connectedMsg);
+			
+			if(thread == null) {
+				serverTH = new ServerThread(this, socket);
+				thread = new Thread(this);
+				thread.start();
+			}
 		}
+		else {
+			frame.dispose();
+		}
+	
+		
 	}
 
 	public void stop()
@@ -225,9 +230,13 @@ public void handleChat(Object msg)
 		serverTH.stop();
 
 	}
+	
+	public ClientGUI getClientGUI() {
+		return frame;
+	}
 }
 
-	class ServerThread extends Thread {
+class ServerThread extends Thread {
 		private Socket sock = null;
 		private Client client = null;
 		private ObjectInputStream streamIn = null;
@@ -249,6 +258,7 @@ public void handleChat(Object msg)
 			catch(IOException e)
 			{
 				System.out.println("Error while trying to get Input Stream: " + e.getMessage());
+				client.getClientGUI().dispose();
 				client.stop();
 			}
 		}
@@ -272,6 +282,12 @@ public void handleChat(Object msg)
 				}
 				catch(IOException e) {
 					System.out.println("Problem When trying to listen for messages: " + e.getMessage());
+					
+					// Show a JOptionFrame warning message and then close the GUI if you lose connection to the server
+					JOptionPane.showMessageDialog(new JFrame(),"Host ended the game or you lost connection");
+					if(client.getClientGUI() != null) {
+						client.getClientGUI().dispose();
+					}
 					client.stop();
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();

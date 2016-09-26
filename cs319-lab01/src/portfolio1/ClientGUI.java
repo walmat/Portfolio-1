@@ -212,23 +212,30 @@ public void updateScoreUI(ArrayList<Score> scores) {
 		lblScore1.setText(scores.get(0).username + ": " + scores.get(0).score);
 		contentPane.add(lblScore1);
 	}
+	else 
+		contentPane.remove(lblScore1);
 	
 	if(scores.size() >= 2) {
 		lblScore2.setText(scores.get(1).username + ": " + scores.get(1).score);
 		contentPane.add(lblScore2);
 	}
+	else
+		contentPane.remove(lblScore2);
 	
 	if(scores.size() >= 3) {
 		lblScore3.setText(scores.get(2).username + ": " + scores.get(2).score);
 		contentPane.add(lblScore3);
 	}
+	else
+		contentPane.remove(lblScore3);
 	
 	if(scores.size() >= 4) {
 		lblScore4.setText(scores.get(3).username + ": " + scores.get(3).score);
 		contentPane.add(lblScore4);
 	}
-}
+	else
+		contentPane.remove(lblScore4);
+	}
 		
-	
 }
 

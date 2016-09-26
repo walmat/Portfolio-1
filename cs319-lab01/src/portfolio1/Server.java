@@ -3,7 +3,7 @@ package portfolio1;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-
+import java.io.ObjectOutputStream;
 /**
  * @author Donavan Brooks and Matt Wall
  * 
@@ -37,6 +37,7 @@ public class Server implements Runnable
 	private static String sentQuestionAns = "";
 	private Question sentQuestion; 
 	private Timer timer;
+	private ObjectOutputStream errorStream;
 	private boolean init = false;
 	
 	public Server(int port)
@@ -63,15 +64,10 @@ public class Server implements Runnable
 		while(true){
 			try {
 				System.out.println("Waiting for a client....");
-				if(roundStarted == true) {
-					JOptionPane.showMessageDialog(new JFrame(), "Sorry we are in the middle of a round, Please wait for it to end, Thank you :)");
-				}	
-				else {
-					addThread(serverSocket.accept());
-					init = true;
-					System.out.println("Client Count: " + clientNum);
-					
-				}
+				System.out.println(roundStarted);
+				addThread(serverSocket.accept());
+				System.out.println("Client Count: " + clientNum);
+	
 				
 			}
 			catch(IOException e){
@@ -276,9 +272,15 @@ public class Server implements Runnable
 			System.out.println("Error while trying to close thread: " + e.getMessage());
 			clientToRemove.stop();
 		}
+		String removedUser = clients.get(index).username;
 		
+		// Removes user from client threads from the score arraylsist updates the score arraylist and alerts other users who left the game
 		clients.remove(index);
-		//clientScores.remove(index);
+		clientScores.remove(index);
+		for(int i = 0; i < clients.size(); i++){
+			clients.get(i).sendMsg(removedUser + " has left the game.");
+			clients.get(i).sendMsg(cloneScoreList(clientScores));
+		}
 		clientNum--;
 		System.out.println("Client Count: " + clientNum) ;
 	}
@@ -286,8 +288,9 @@ public class Server implements Runnable
 	private void addThread(Socket socket)
 	{
 		//add new client
-		if (clientNum < 5){  
+		if (clientNum <= 4 && roundStarted == false){  
 			System.out.println("Client accepted: " + socket);
+			init = true;
 	         clients.add(new ClientThread(this, socket));
 	         
 	         try{
@@ -298,9 +301,17 @@ public class Server implements Runnable
 	         catch(IOException e){
 	        	 System.out.println("Error while trying to open thread: " + e.getMessage());
 	         }
-		}         
-	      else
-	      	System.out.println("Maximum Number of clients has been reached");
+		} else{
+			System.out.println("Sent error message");
+			try {
+				errorStream = new ObjectOutputStream(socket.getOutputStream());
+				errorStream.writeObject("Server full, or the game is in the middle of a round. Try Again later.");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+			
 	}
 	
 	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
@@ -351,7 +362,7 @@ public class Server implements Runnable
 			}
 			
 			// If anybody else chose your answer increment your score by 1
-			if(c.createdFakeAnswer != null && c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
+			else if(c.createdFakeAnswer != null && c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
 				
 				// This holds the username of the person that clicked you answer
 				String user = clients.get(findClient(Integer.parseInt(clientAnswers.get(j).port))).username;

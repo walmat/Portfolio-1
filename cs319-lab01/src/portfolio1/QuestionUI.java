@@ -26,6 +26,10 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import java.awt.Component;
+<<<<<<< HEAD
+=======
+import java.awt.EventQueue;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 
 public class QuestionUI extends JFrame
 {
@@ -35,8 +39,12 @@ public class QuestionUI extends JFrame
 	 */
 	private static final long serialVersionUID = 5380090635516117072L;
 	private JPanel contentPane;
+<<<<<<< HEAD
 	volatile boolean newTextMessage = false; 
 	volatile boolean newImageMessage = false;
+=======
+	volatile boolean newAnswerMessage = false; 
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	public String chosenAnswer;
 	private String message;
 	private JTextPane questionField;
@@ -69,6 +77,7 @@ public class QuestionUI extends JFrame
 		lblTypeYourAnswer.setBounds(148, 102, 142, 31);
 		contentPane.add(lblTypeYourAnswer);
 		
+<<<<<<< HEAD
 		JButton button1 = new JButton("");
 		button1.addMouseListener(new MouseAdapter() {
 			@Override
@@ -91,10 +100,31 @@ public class QuestionUI extends JFrame
 		});
 		if (numAnswer >= 1){
 			button1.setText(answers.get(0).answer);
+=======
+		
+		if (numAnswer >= 1){
+			
+			JButton button1 = new JButton("");
+			button1.setBounds(51, 150, 163, 23);
+			button1.setText(answers.get(0).answer);
+			
+			button1.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							newAnswerMessage = true;
+							chosenAnswer = button1.getText();
+						}
+					});
+				}
+			});
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			contentPane.add(button1);
 		}
 		
 		
+<<<<<<< HEAD
 		JButton button2 = new JButton("");
 		button2.addMouseListener(new MouseAdapter() {
 			@Override
@@ -134,6 +164,63 @@ public class QuestionUI extends JFrame
 		
 		if (numAnswer >= 4){
 			button4.setText(answers.get(3).answer);
+=======
+		if (numAnswer >= 2){
+			
+			JButton button2 = new JButton("");
+			button2.setBounds(226, 150, 163, 23);
+			button2.setText(answers.get(1).answer);
+			
+			button2.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							newAnswerMessage = true;
+							chosenAnswer = button2.getText();
+							System.out.println("Button2 clicked");
+						}
+					});
+				}
+			});
+			contentPane.add(button2);
+		}
+
+		if (numAnswer >= 3){
+			JButton button3 = new JButton("");
+			button3.setBounds(51, 201, 163, 23);
+			button3.setText(answers.get(2).answer);
+			
+			button3.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							newAnswerMessage = true;
+							chosenAnswer = button3.getText();
+						}
+					});
+				}
+			});
+			contentPane.add(button3);
+		}
+		
+		if (numAnswer >= 4){
+			JButton button4 = new JButton("");
+			button4.setBounds(226, 201, 163, 23);
+			button4.setText(answers.get(3).answer);
+			button4.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent e) {
+					EventQueue.invokeLater(new Runnable() {
+						public void run() {
+							newAnswerMessage = true;
+							chosenAnswer = button4.getText();
+						}
+					});
+				}
+			});			
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			contentPane.add(button4);
 		}
 		
@@ -142,8 +229,13 @@ public class QuestionUI extends JFrame
 		SimpleAttributeSet center = new SimpleAttributeSet();
 		StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, doc.getLength(), center, false);
+<<<<<<< HEAD
 		questionField.setFont(new Font("Gotham Medium", Font.BOLD, 20));
 		questionField.setBounds(24, 18, 404, 42);
+=======
+		questionField.setFont(new Font("Gotham Medium", Font.BOLD, 25));
+		questionField.setBounds(24, 18, 404, 60);
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		questionField.setText(q);
 		contentPane.add(questionField);
 		
@@ -152,6 +244,7 @@ public class QuestionUI extends JFrame
 		lblTimer.setBounds(20, 160, 50, 50);
 		contentPane.add(lblTimer );
 		
+<<<<<<< HEAD
 //		if (numAnswer == 1) {
 //			contentPane.add(button1);
 //		}
@@ -171,10 +264,22 @@ public class QuestionUI extends JFrame
 //			contentPane.add(button4);
 //		}
 		
+=======
+	}
+	
+	public static void main(String[] args) {
+		String q = "What the fuck";
+		ArrayList<Answer> a = new ArrayList<Answer>();
+		a.add(new Answer("Cool", "1234"));
+		a.add(new Answer("fuck", "4321"));
+		QuestionUI ui = new QuestionUI(q, a);
+		ui.setVisible(true);
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	}
 	
 	public String getMessage()
 	{		
+<<<<<<< HEAD
 		if(newTextMessage == true) {
 			newTextMessage = false;
 			message = questionField.getText();
@@ -185,6 +290,12 @@ public class QuestionUI extends JFrame
 		
 		return message;
 	
+=======
+		if(newAnswerMessage == true) {
+			newAnswerMessage = false;
+		}
+		return chosenAnswer;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	}
 	
 	public void recieveMessage(String message)
@@ -195,6 +306,7 @@ public class QuestionUI extends JFrame
 		questionField.setText("");
 	}
 	
+<<<<<<< HEAD
 	public int validateAnswer(String sentAns) {
 		int score = 0;
 		for (int i = 0; i < a.size(); i++) {
@@ -227,5 +339,10 @@ public class QuestionUI extends JFrame
 	public ArrayList<Answer> getAnswersToQuestions() {
 		return a;
 	}
+=======
+	public void changeTimerText(String msg) {
+		lblTimer.setText(msg);
+	}
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 }
 

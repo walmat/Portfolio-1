@@ -3,7 +3,11 @@ package portfolio1;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+<<<<<<< HEAD
 
+=======
+import java.io.ObjectOutputStream;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 /**
  * @author Donavan Brooks and Matt Wall
  * 
@@ -31,10 +35,18 @@ public class Server implements Runnable
 	private static Question q;
 	private ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
 	private ArrayList<Answer> clientAnswers = new ArrayList<Answer>();
+	private ArrayList<Score> clientScores = new ArrayList<Score>();
 	static int clientNum = 0;
 	static boolean roundStarted = false;
 	private static String sentQuestionAns = "";
+<<<<<<< HEAD
 	private Timer timer;
+=======
+	private Question sentQuestion; 
+	private Timer timer;
+	private ObjectOutputStream errorStream;
+	private boolean init = false;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	
 	public Server(int port)
 	{
@@ -60,14 +72,11 @@ public class Server implements Runnable
 		while(true){
 			try {
 				System.out.println("Waiting for a client....");
-				if(roundStarted == true) {
-					JOptionPane.showMessageDialog(new JFrame(), "Sorry we are in the middle of a round, Please wait for it to end, Thank you :)");
-				}	
-				else {
-					addThread(serverSocket.accept());
-					clients.get(clientNum - 1).sendMsg("Connected to server");
-					System.out.println("Client Count: " + clientNum);
-				}
+				System.out.println(roundStarted);
+				addThread(serverSocket.accept());
+				System.out.println("Client Count: " + clientNum);
+	
+				
 			}
 			catch(IOException e){
 				System.out.println("Server Acception Failure: " + e.getMessage());
@@ -104,7 +113,11 @@ public class Server implements Runnable
 	private int findClient(int ID)
 	{
 		//Find Client
+<<<<<<< HEAD
 		for(int i = 0; i < clientNum; i++)
+=======
+		for(int i = 0; i < clients.size(); i++)
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		{
 			if(clients.get(i).getID() == ID) {
 				return i;
@@ -116,11 +129,32 @@ public class Server implements Runnable
 	
 	public synchronized void handle(String[] input)
 	{
+<<<<<<< HEAD
+=======
+	
+		if(init == true) {
+			clients.get(clientNum -1).username = input[2];
+//			for(int i = 0; i < clientNum; i++) {
+//				clients.get(i).sendMsg(clients.get(i).username + ": " + input[1]);
+//			}
+			clientScores.add(new Score(clients.get(clientNum -1 ).getID(), clients.get(clientNum -1).username, clients.get(clientNum - 1).score));
+			System.out.println("cLIENtscores size: " + clientScores.size());
+			updateScore(clients.get(clientNum - 1));
+			init = false;
+		}
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		
 		//new message, send to clients and then write it to history
 		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
 			
-			Question sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+			try {
+				sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+			}catch(IllegalArgumentException e) {
+				JOptionPane.showMessageDialog(new JFrame(), "Sorry, there seems to be no questions in our list."
+															+ " Check your internet connection and try again.");
+				System.exit(-1);
+			}
+			
 			//clientAnswers.add(new Answer("rightAnswer", sentQuestion.rightAnswer));
 			sentQuestionAns = sentQuestion.rightAnswer;
 			
@@ -144,11 +178,16 @@ public class Server implements Runnable
 			        	timer.stop();
 			        	roundStarted = false;
 			        	
+<<<<<<< HEAD
 			        	for(int i = 0; i < clientAnswers.size(); i++) {
+=======
+			        	for(int i = 0; i < clientNum; i++) {
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			        		int port = clients.get(i).getID();
 			        		
 							try {
 								ArrayList<Answer> a = randomizeClientAnswers(port);
+<<<<<<< HEAD
 								QuestionUI q = new QuestionUI(sentQuestion.question, a);
 								
 								clients.get(i).sendMsg(q);
@@ -179,20 +218,68 @@ public class Server implements Runnable
 								timer.start();
 				
 						
+=======
+								//QuestionUI q = new QuestionUI(sentQuestion.question, a);
+								
+								//It now sends the arrayList not the UI because it was causing the UI not to record button clicks
+								clients.get(i).sendMsg(a);
+								clients.get(i).sentAnswers = a;
+								roundStarted = true;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 								//create a new timer to display the QuestionUI for a certain amount of time
 								
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
 							}
+<<<<<<< HEAD
 			        	}     	
 			        	clientAnswers.clear();
+=======
+							
+			        	}     	
+			        	
+			        	//clientAnswers.clear();	
+			        	
+			        	ActionListener alistener = new ActionListener() {
+						    int timeRemaining = 10;
+						    
+						    public void actionPerformed(ActionEvent evt){
+						    	timeRemaining--;
+						    	for(int i = 0; i < clientNum; i++) {
+						    		clients.get(i).sendMsg(timeRemaining);
+						    	}
+						        
+						        if(timeRemaining <= 0){
+						        	timer.stop();
+						        
+						        	for(int i = 0; i < clientNum; i++)
+						        	{
+						        		calculateScore(clients.get(i));
+						        		clients.get(i).sendMsg("Score: " + clients.get(i).score);
+						        	}
+						        	for(int i = 0; i <clientNum; i++ ){ 
+						        		updateScore(clients.get(i));
+						        	}
+						        	
+						        	roundStarted = false;
+						        }
+						    }
+						};
+						timer = new Timer(1000, alistener);
+						timer.start();
+			        	
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			       }
 			   }
 			};
 			
 			timer = new Timer(1000, actionListener);
 			timer.start();
+<<<<<<< HEAD
 			
+=======
+			clientAnswers.clear();	
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		}
 		
 		else if(roundStarted == true){
@@ -220,8 +307,14 @@ public class Server implements Runnable
 		}
 		
 		else if(roundStarted == false){
+			//This saves the username of the client who sent the message 
+			//clients.get(findClient(Integer.parseInt(input[0]))).username = input[2];
 			for(int i = 0; i < clientNum; i++) {
+<<<<<<< HEAD
 				clients.get(i).sendMsg(input[1]);
+=======
+				clients.get(i).sendMsg(input[2] + ": " + input[1]);
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			}
 		}
 		
@@ -244,17 +337,29 @@ public class Server implements Runnable
 			System.out.println("Error while trying to close thread: " + e.getMessage());
 			clientToRemove.stop();
 		}
+		String removedUser = clients.get(index).username;
 		
+		// Removes user from client threads from the score arraylsist updates the score arraylist and alerts other users who left the game
 		clients.remove(index);
+		clientScores.remove(index);
+		for(int i = 0; i < clients.size(); i++){
+			clients.get(i).sendMsg(removedUser + " has left the game.");
+			clients.get(i).sendMsg(cloneScoreList(clientScores));
+		}
 		clientNum--;
 		System.out.println("Client Count: " + clientNum) ;
-}
+	}
 
 	private void addThread(Socket socket)
 	{
 		//add new client
+<<<<<<< HEAD
 		if (clientNum < 5){  
+=======
+		if (clientNum <= 4 && roundStarted == false){  
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			System.out.println("Client accepted: " + socket);
+			init = true;
 	         clients.add(new ClientThread(this, socket));
 	         
 	         try{
@@ -265,9 +370,17 @@ public class Server implements Runnable
 	         catch(IOException e){
 	        	 System.out.println("Error while trying to open thread: " + e.getMessage());
 	         }
-		}         
-	      else
-	      	System.out.println("Maximum Number of clients has been reached");
+		} else{
+			System.out.println("Sent error message");
+			try {
+				errorStream = new ObjectOutputStream(socket.getOutputStream());
+				errorStream.writeObject("Server full, or the game is in the middle of a round. Try Again later.");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+			
 	}
 	
 	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
@@ -277,6 +390,10 @@ public class Server implements Runnable
 		
 		for (int i = 0; i < clientAnswers.size(); i++){
 			if (a.get(i).port.equals(String.valueOf(port))) {
+<<<<<<< HEAD
+=======
+				clients.get(i).createdFakeAnswer = a.get(i).answer;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 				a.get(i).answer = sentQuestionAns;
 			}
 		}
@@ -301,4 +418,58 @@ public class Server implements Runnable
 		return i;
 	}
 	
+	public void calculateScore(ClientThread c) { 
+		
+		String clientPort = String.valueOf(c.getID());
+		
+		System.out.println("RoundStarted " + roundStarted);
+		for(int j = 0; j < clientAnswers.size(); j++) {
+			
+			// If you chose the right answer increment your score by
+			if(clientPort.equals(clientAnswers.get(j).port)) {
+				if(clientAnswers.get(j).answer.equals(sentQuestionAns)){
+					System.out.println("You submitted the right answer");
+					c.score += 2;
+				}
+			}
+			
+			// If anybody else chose your answer increment your score by 1
+			else if(c.createdFakeAnswer != null && c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
+				
+				// This holds the username of the person that clicked you answer
+				String user = clients.get(findClient(Integer.parseInt(clientAnswers.get(j).port))).username;
+				System.out.println(user + " clicked your answer");
+				c.score += 1;
+			}
+		}
+	}
+	
+	public static ArrayList<Score> cloneScoreList(ArrayList<Score> scores) {
+	    ArrayList<Score> clonedList = new ArrayList<Score>(scores.size());
+	    for (Score s : scores) {
+	    	//pass the old answer to the copy constructor
+	        clonedList.add(new Score(s));
+	    }
+	    return clonedList;
+	}
+	
+	public void updateScore(ClientThread c) {
+		
+		ArrayList<Score> cc = cloneScoreList(clientScores);
+		for(int i = 0; i < clients.size(); i++) {
+			int threadID = c.getID();
+			int scoreListPort = cc.get(i).port;
+			
+			System.out.println(threadID == scoreListPort);
+			if(threadID == scoreListPort) {
+				cc.get(i).score = c.score;
+				clientScores.get(i).score = c.score;
+			}
+	}
+		for(int j = 0; j < clients.size(); j++){
+			clients.get(j).sendMsg(cc);
+		}
+	
+		
+	}
 }

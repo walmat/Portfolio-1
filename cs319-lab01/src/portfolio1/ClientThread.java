@@ -12,12 +12,19 @@ import javax.swing.JOptionPane;
 public class ClientThread extends Thread {
 	
 	private Server server = null;
-	private Socket socket = null;
+	public Socket socket = null;
 	private int ID;
+	public String username; 
 	private ObjectInputStream streamIn = null;
 	private ObjectOutputStream streamOut = null;
+<<<<<<< HEAD
 	private boolean acceptAnswers = true;
 	public ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
+=======
+	public  ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
+	public  String createdFakeAnswer;
+	public int score = 0;
+>>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	
 	public ClientThread(Server server_, Socket socket_)
 	{
@@ -59,6 +66,22 @@ public class ClientThread extends Thread {
 	
 	public int getID(){
 		return ID;
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	
+	public int getScore() {
+		return score;
+	}
+	
+	public ArrayList<Answer> getSentAnswers() {
+		return sentAnswers;
+	}
+	
+	public String getFakeAnswer() {
+		return createdFakeAnswer;
 	}
 	
 	public void open() throws IOException

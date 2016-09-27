@@ -108,11 +108,11 @@ public class Client implements Runnable
 				// This sends your answer for the answer round to the server and prints to console the answer you selected
 				if(answerFrame != null && answerFrame.newAnswerMessage == true) {
 					try {
-						message[1] = answerFrame.getMessage();
+						System.out.println("Selected Answer: " + answerFrame.getMessage());
+						message[1] = answerFrame.chosenAnswer;
 						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
-						System.out.println("You answered \"" + message[1] + "\"");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

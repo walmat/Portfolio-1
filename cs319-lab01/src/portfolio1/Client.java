@@ -131,30 +131,44 @@ public class Client implements Runnable
 	}
 
 	
-public void handleChat(Object msg)
+public synchronized void handleChat(Object msg)
 	{
 	//If it is a text message just print it in the ui
 	if(msg instanceof Integer)
 	{
 		if(answerRound == true) {
 			answerFrame.changeTimerText(msg + "");
+			if((int) msg <= 0) {
+				answerRound = false;
+				// This will highlight the right answer in Green for three seconds  after the round is over , then dispose of the answerFrame and make the clientGUI visible again
+				if(answerFrame != null) {
+
+					try {
+						TimeUnit.SECONDS.sleep(2);
+				
+		    	answerFrame.highlightRightAnswer();
+		    	TimeUnit.SECONDS.sleep(3);
+		        answerFrame.dispose();
+		        frame.setVisible(true);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			
+				}
+			}
 		}
 		else {
 			frame.changeBtnText(msg + "");
-		}
-		
-		if((int) msg <= 0) {
-			frame.changeBtnText("Send");
-			roundStarted = false;
-			answerRound = false;
+			if((int) msg <= 0) {
+
+				frame.changeBtnText("Send");
+				roundStarted = false;
 			
-			// This will highlight the right answer in Green after the round is over for three seconds, then dispose of the answerFrame and make the clientGUI visible again
-			if(answerFrame != null) {
-				answerFrame.highlightRightAnswer();
-				answerFrame.dispose();
-        		frame.setVisible(true);
 			}
 		}
+		
+		
 	}
 	
 	else if(msg instanceof Question){

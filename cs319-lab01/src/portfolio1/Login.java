@@ -195,6 +195,7 @@ public class Login extends JFrame {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
+							//Open GUI that allows you to start a game or join a game
 							JoinStartGUI js = new JoinStartGUI(username, password, email, color);
 							js.setVisible(true);
 						} catch (Exception e) {

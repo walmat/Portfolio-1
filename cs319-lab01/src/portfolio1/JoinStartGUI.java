@@ -87,6 +87,7 @@ public class JoinStartGUI extends JFrame{
 					EventQueue.invokeLater(new Runnable() {
 						public void run() {
 							try {
+								// start the server and client
 								server = new Server(1222);
 								Client client = new Client("localhost", username, password, email, color, 1222, true);
 							} catch (Exception e) {
@@ -124,6 +125,7 @@ public class JoinStartGUI extends JFrame{
 					EventQueue.invokeLater(new Runnable() {
 						public void run() {
 							try {
+								// Start the client that connects to the ipaddress you entered
 								Client client = new Client(textField.getText(), username, password, email, color, 1222, false);
 							} catch (Exception e) {
 								System.out.println("unable to create client: " + e.getMessage());

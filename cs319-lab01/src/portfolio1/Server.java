@@ -14,14 +14,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.Timer;
-import javax.swing.border.EmptyBorder;
+
 
 public class Server implements Runnable 
 {
@@ -42,7 +38,7 @@ public class Server implements Runnable
 	private int roundNum = 1;
 	
 	//Holds what end you want to end on
-	private int endRound = 2;
+	private int endRound = 10;
 	
 	public Server(int port)
 	{
@@ -57,7 +53,7 @@ public class Server implements Runnable
 		{
 			System.out.println("Can not bind to port " + port + ": " + ioe.getMessage());
 		}
-		// Wants it connects to the server fetches the questions for the quiz
+		// Once it connects to the server fetches the questions for the quiz
 		Question q = new Question();
 		q.fillQuestionList();
 	}
@@ -112,11 +108,12 @@ public class Server implements Runnable
 				return i;
 			}
 		}
-
 		return -1;
 	}
 	
-	// Messages are sent to the sever in a String array with the format: [port][message][username]
+	// Messages are received by the sever in a String array with the format: [port][message][username]
+	// Handles message sent to the server and determines how they should be handled
+	
 	public synchronized void handle(String[] input)
 	{
 		// Once a client connects, it will set the clientThread.username and add the new client to the scores ArrrayList
@@ -128,9 +125,9 @@ public class Server implements Runnable
 			int ID = clients.get(clientNum -1 ).getID();
 			String user = clients.get(clientNum -1).getUsername();
 			int score = clients.get(clientNum - 1).getScore();
-
-			clientScores.add(new Score(ID,  user, score));
 			
+			// Adds the newly connected client to the score array and updates the scores
+			clientScores.add(new Score(ID,  user, score));
 			updateScore(clients.get(clientNum - 1));
 			init = false;
 		}
@@ -156,6 +153,7 @@ public class Server implements Runnable
 				clients.get(i).sendMsg(sentQuestion);
 			}
 			
+			// Creates a new timer that allows you to create a fake answer for a certain amount of time. 
 			ActionListener actionListener = new ActionListener() 
 			{
 			    int timeRemaining = 10;
@@ -222,14 +220,14 @@ public class Server implements Runnable
 						        		updateScore(clients.get(i));
 						        	}
 						        	
+						        	//Increment Your round number
 						        	roundNum++;
 						        	
 						        	// If you reach the round limit end the game
 						        	if(roundNum > endRound && roundStarted == false) {
-						        		System.out.println("EEND Game");
+						        		System.out.println("END GAME");
 						        		endGame();
 						    		}
-						        	
 						        }
 						    }
 						};
@@ -250,18 +248,15 @@ public class Server implements Runnable
 			timer.start();
 			clientAnswers.clear();	
 			
-			//Increment roundNum
-			
+			// Send all the clients the updated round
 			String[] roundMsg = {"Round", String.valueOf(roundNum), String.valueOf(endRound)};
 			for(int i = 0; i < clientNum; i++) {
-			
 	    		clients.get(i).sendMsg(roundMsg);
 	    	}
 		}
 		
 		
-		
-		// If the round is started, this will listen for the clients answers and update the Answer ArrayList so that it only store the 
+		// If the round is started, this will listen for the clients answers and update the Answer ArrayList so that it only stores the 
 		// last answer sent in by each individual client.  It knows who sent what answer by pairing it with the port number
 		else if(roundStarted == true){
 			boolean found = false;
@@ -394,7 +389,7 @@ public class Server implements Runnable
 	}
 	
 	// Helper method to calculate score.  It determines if the client got the answer right and if anybody entered the fake answer he created
-	// If the client gets the answer right they get 2 points, and they get an additional 1 point forr every client that guessed their fake answer
+	// If the client gets the answer right they get 2 points, and they get an additional 1 point for every player that guessed their fake answer
 	private void calculateScore(ClientThread c) { 
 		
 		String clientPort = String.valueOf(c.getID());
@@ -461,19 +456,15 @@ public class Server implements Runnable
 		return leader;
 	}	
 	
+	// Sends all the clients the end game message
 	private void endGame() {
-		
-		// Wait for two seconds before ending the game
 		try {
-		
-		ClientThread leader = findScoreLeader();
-		for(int i = 0; i < clientNum; i++) {
-			clients.get(i).sendMsg(leader.username + " wins the game with a score of " + leader.score);
-
-		}
-		//Stops the server
-		stop();
-		
+			ClientThread leader = findScoreLeader();
+			for(int i = 0; i < clientNum; i++) {
+				clients.get(i).sendMsg(leader.username + " wins the game with a score of " + leader.score);
+			}
+			//Stops the server
+			stop();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

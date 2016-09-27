@@ -46,6 +46,7 @@ public class ClientThread extends Thread {
 		}
 	}
 	
+	// Sends message using outputstream
 	public void sendMsg(Object msg) {
 		
 		try {

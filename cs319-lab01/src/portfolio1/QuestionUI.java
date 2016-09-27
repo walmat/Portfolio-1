@@ -2,36 +2,23 @@ package portfolio1;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-
-import java.awt.Component;
 import java.awt.EventQueue;
 
 public class QuestionUI extends JFrame
 {
-
 	/**
 	 * serial
 	 */
@@ -74,6 +61,9 @@ public class QuestionUI extends JFrame
 		lblTypeYourAnswer.setHorizontalAlignment(SwingConstants.CENTER);
 		lblTypeYourAnswer.setBounds(148, 102, 142, 31);
 		contentPane.add(lblTypeYourAnswer);
+		
+		// This GUI takes an arraylist of answers and only adds the appropriate amount of buttons, based on the size of the answer Arraylist.
+		// There can be no more than 4 buttons
 		
 		if (numAnswer >= 1){
 			
@@ -166,15 +156,6 @@ public class QuestionUI extends JFrame
 		contentPane.add(lblTimer);
 	}
 	
-//	public static void main(String[] args) {
-//		String q = "What the fuck";
-//		ArrayList<Answer> a = new ArrayList<Answer>();
-//		a.add(new Answer("Cool", "1234"));
-//		a.add(new Answer("fuck", "4321"));
-//		QuestionUI ui = new QuestionUI(q, a);
-//		ui.setVisible(true);
-//	}
-	
 	public String getMessage()
 	{		
 		if(newAnswerMessage == true) {
@@ -183,18 +164,12 @@ public class QuestionUI extends JFrame
 		return chosenAnswer;
 	}
 	
-	public void recieveMessage(String message)
-	{
-		if (!message.trim().equals("")){
-			questionField.setText(message + "\n");
-		}
-		questionField.setText("");
-	} 
-	
+	// Changes the timer label
 	public void changeTimerText(String msg) {
 		lblTimer.setText("Time Left: " + msg);
 	}
 	
+	// Highlights the correct answer in green, and it finds it based on port number
 	public void highlightRightAnswer() {
 		int buttonIndex = 0;
 		for(int i = 0; i < numAnswer; i++) {

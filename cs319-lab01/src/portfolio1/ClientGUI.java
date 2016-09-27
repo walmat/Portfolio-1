@@ -200,9 +200,9 @@ public class ClientGUI extends JFrame
 		}
 		
 		return message;
-	
 	}
 	
+	// Prints message to screen
 	public void recieveMessage(String message)
 	{
 		if (!message.trim().equals("")){

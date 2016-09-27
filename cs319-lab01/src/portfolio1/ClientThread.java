@@ -17,14 +17,9 @@ public class ClientThread extends Thread {
 	public String username; 
 	private ObjectInputStream streamIn = null;
 	private ObjectOutputStream streamOut = null;
-<<<<<<< HEAD
-	private boolean acceptAnswers = true;
-	public ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
-=======
 	public  ArrayList<Answer> sentAnswers = new ArrayList<Answer>();
 	public  String createdFakeAnswer;
 	public int score = 0;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	
 	public ClientThread(Server server_, Socket socket_)
 	{

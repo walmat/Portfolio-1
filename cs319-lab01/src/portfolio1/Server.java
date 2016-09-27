@@ -3,11 +3,8 @@ package portfolio1;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-<<<<<<< HEAD
-
-=======
 import java.io.ObjectOutputStream;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
+
 /**
  * @author Donavan Brooks and Matt Wall
  * 
@@ -39,14 +36,10 @@ public class Server implements Runnable
 	static int clientNum = 0;
 	static boolean roundStarted = false;
 	private static String sentQuestionAns = "";
-<<<<<<< HEAD
-	private Timer timer;
-=======
 	private Question sentQuestion; 
 	private Timer timer;
 	private ObjectOutputStream errorStream;
 	private boolean init = false;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 	
 	public Server(int port)
 	{
@@ -113,11 +106,7 @@ public class Server implements Runnable
 	private int findClient(int ID)
 	{
 		//Find Client
-<<<<<<< HEAD
-		for(int i = 0; i < clientNum; i++)
-=======
 		for(int i = 0; i < clients.size(); i++)
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		{
 			if(clients.get(i).getID() == ID) {
 				return i;
@@ -129,9 +118,6 @@ public class Server implements Runnable
 	
 	public synchronized void handle(String[] input)
 	{
-<<<<<<< HEAD
-=======
-	
 		if(init == true) {
 			clients.get(clientNum -1).username = input[2];
 //			for(int i = 0; i < clientNum; i++) {
@@ -142,7 +128,6 @@ public class Server implements Runnable
 			updateScore(clients.get(clientNum - 1));
 			init = false;
 		}
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		
 		//new message, send to clients and then write it to history
 		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
@@ -178,63 +163,24 @@ public class Server implements Runnable
 			        	timer.stop();
 			        	roundStarted = false;
 			        	
-<<<<<<< HEAD
-			        	for(int i = 0; i < clientAnswers.size(); i++) {
-=======
 			        	for(int i = 0; i < clientNum; i++) {
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
+			        		
 			        		int port = clients.get(i).getID();
 			        		
 							try {
 								ArrayList<Answer> a = randomizeClientAnswers(port);
-<<<<<<< HEAD
-								QuestionUI q = new QuestionUI(sentQuestion.question, a);
-								
-								clients.get(i).sendMsg(q);
-								roundStarted = true;
-								clients.get(i).sentAnswers = a;
-								
-								ActionListener alistener = new ActionListener() {
-								    int timeRemaining = 10 ;
-								   
-								    public void actionPerformed(ActionEvent evt){
-								    	timeRemaining--;
-								    	for(int i = 0; i < clientNum; i++) {
-								    		clients.get(i).sendMsg(timeRemaining);
-								    	}
-								        
-								        if(timeRemaining <= 0){
-								        	q.dispose();
-								        	timer.stop();
-								        	for(int i = 0; i < clientNum; i++)
-								        	{
-								        		clients.get(i).sendMsg(clientAnswers);
-								        	}
-								        	roundStarted = false;
-								        }
-								    }
-								};
-								timer = new Timer(1000, alistener);
-								timer.start();
-				
-						
-=======
+
 								//QuestionUI q = new QuestionUI(sentQuestion.question, a);
 								
 								//It now sends the arrayList not the UI because it was causing the UI not to record button clicks
 								clients.get(i).sendMsg(a);
 								clients.get(i).sentAnswers = a;
 								roundStarted = true;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 								//create a new timer to display the QuestionUI for a certain amount of time
 								
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
 							}
-<<<<<<< HEAD
-			        	}     	
-			        	clientAnswers.clear();
-=======
 							
 			        	}     	
 			        	
@@ -268,18 +214,14 @@ public class Server implements Runnable
 						timer = new Timer(1000, alistener);
 						timer.start();
 			        	
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			       }
 			   }
 			};
 			
 			timer = new Timer(1000, actionListener);
 			timer.start();
-<<<<<<< HEAD
-			
-=======
+
 			clientAnswers.clear();	
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		}
 		
 		else if(roundStarted == true){
@@ -310,11 +252,7 @@ public class Server implements Runnable
 			//This saves the username of the client who sent the message 
 			//clients.get(findClient(Integer.parseInt(input[0]))).username = input[2];
 			for(int i = 0; i < clientNum; i++) {
-<<<<<<< HEAD
-				clients.get(i).sendMsg(input[1]);
-=======
 				clients.get(i).sendMsg(input[2] + ": " + input[1]);
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			}
 		}
 		
@@ -353,11 +291,7 @@ public class Server implements Runnable
 	private void addThread(Socket socket)
 	{
 		//add new client
-<<<<<<< HEAD
-		if (clientNum < 5){  
-=======
 		if (clientNum <= 4 && roundStarted == false){  
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 			System.out.println("Client accepted: " + socket);
 			init = true;
 	         clients.add(new ClientThread(this, socket));
@@ -390,10 +324,7 @@ public class Server implements Runnable
 		
 		for (int i = 0; i < clientAnswers.size(); i++){
 			if (a.get(i).port.equals(String.valueOf(port))) {
-<<<<<<< HEAD
-=======
 				clients.get(i).createdFakeAnswer = a.get(i).answer;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 				a.get(i).answer = sentQuestionAns;
 			}
 		}
@@ -465,7 +396,7 @@ public class Server implements Runnable
 				cc.get(i).score = c.score;
 				clientScores.get(i).score = c.score;
 			}
-	}
+		}
 		for(int j = 0; j < clients.size(); j++){
 			clients.get(j).sendMsg(cc);
 		}

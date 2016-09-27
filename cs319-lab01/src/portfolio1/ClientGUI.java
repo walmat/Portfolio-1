@@ -165,18 +165,27 @@ public class ClientGUI extends JFrame
 			startRound = false;
 		}
 		
+		JLabel lblScoreTitle = new JLabel("Scores");
+		lblScoreTitle.setBounds(500, 20, 161, 31);
+		lblScoreTitle.setFont((new Font("Tahoma", Font.PLAIN, 30)));
+		contentPane.add(lblScoreTitle);
+		
 		// Initializing score labels
 		lblScore1 = new JLabel();
-		lblScore1.setBounds(450, 30, 161, 16);
+		lblScore1.setBounds(450, 70, 161, 16);
+		lblScore1.setFont((new Font("Tahoma", Font.PLAIN, 20)));
 
 		lblScore2 = new JLabel();
-		lblScore2.setBounds(450, 60, 161, 16);
+		lblScore2.setBounds(450, 100, 161, 16);
+		lblScore2.setFont((new Font("Tahoma", Font.PLAIN, 20)));
 	
 		lblScore3 = new JLabel();
-		lblScore3.setBounds(450, 90, 161, 16);
+		lblScore3.setBounds(450, 130, 161, 16);
+		lblScore3.setFont((new Font("Tahoma", Font.PLAIN, 20)));
 	
 		lblScore4 = new JLabel();
-		lblScore4.setBounds(450, 120, 161, 16);
+		lblScore4.setBounds(450, 160, 161, 16);
+		lblScore4.setFont((new Font("Tahoma", Font.PLAIN, 20)));
 }
 
 public String getMessage()

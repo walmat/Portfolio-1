@@ -43,19 +43,10 @@ public class Client implements Runnable
 	public Color color;
 	private boolean roundStarted = false;
 	private boolean answerRound = false;
-<<<<<<< HEAD
-	private boolean connected = false;
-	private Server s;
-	private QuestionUI answerInput;
-	private String fakeAnswer;
-=======
-	private boolean notConnected = false;
 	private Server s;
 	private QuestionUI answerInput;
 	private String fakeAnswer;
 	private String receivedQuestion;
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
-	private int score = 0;
 	
 	// This determines whether they are trying to send a message or image file
 
@@ -118,8 +109,6 @@ public class Client implements Runnable
 					}
 				}
 				
-<<<<<<< HEAD
-=======
 				if(answerInput != null && answerInput.newAnswerMessage == true) {
 					try {
 						message[1] = answerInput.getMessage();
@@ -132,7 +121,6 @@ public class Client implements Runnable
 					}
 				}
 				
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 				if(roundStarted == true) {
 					fakeAnswer = frame.getMessage();
 				}
@@ -157,16 +145,10 @@ public void handleChat(Object msg)
 			frame.changeBtnText("Send");
 			roundStarted = false;
 			answerRound = false;
-<<<<<<< HEAD
-//			if(answerInput != null) {
-//				
-//				answerInput.dispose();
-//			}
-=======
+			
 			if(answerInput != null) {
 				answerInput.dispose();
 			}
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 		}
 	}
 	
@@ -177,7 +159,6 @@ public void handleChat(Object msg)
 		roundStarted = true;
 	}
 	
-<<<<<<< HEAD
 	else if (msg instanceof QuestionUI){
 		answerInput = (QuestionUI) msg;
 		answerInput.setVisible(true);
@@ -185,27 +166,6 @@ public void handleChat(Object msg)
 		answerRound = true;
 	}
 	
-//	else if(msg instanceof ArrayList<?>) {
-//		
-//		ArrayList<Answer> originalAnswers = new ArrayList<Answer>();
-//		originalAnswers = answerInput.getAnswersToQuestions();
-//		
-//		for(int i = 0; i < ((ArrayList<Answer>) msg).size(); i++) {
-//			if((this.socket.getLocalPort() + "").equals(((ArrayList<Answer>) msg).get(i).port) 
-//					&& ){
-//				score += answerInput.validateAnswer()
-//			}
-//			
-//			else {
-//				if(answerInput.chosenAnswer.equals(((ArrayList<Answer>) msg).get(i).answer)) {
-//					score += 1;
-//				}
-//			}
-//		}
-//		
-//	}
-	
-=======
 	else if(msg instanceof ArrayList<?>) {
 		
 		if(((ArrayList<?>) msg).get(0) instanceof Answer) {
@@ -221,8 +181,11 @@ public void handleChat(Object msg)
 			frame.repaint();
 		}
 	}
-	else if(msg.equals("Server full, or the game is in the middle of a round. Try Again later.")) {notConnected = true;}
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
+	else if(msg.equals("Server full, or the game is in the middle of a round. Try Again later.")) {
+			System.out.println("Error Message Received");
+			JOptionPane.showMessageDialog(new JFrame(), "Server is full or game is in the middle of a round, Try Again later :)");
+			frame.dispose();
+		}
 	else {
 			frame.recieveMessage((String)msg);
 		}
@@ -231,15 +194,7 @@ public void handleChat(Object msg)
 
 	public void start() throws IOException
 	{
-<<<<<<< HEAD
-	
-		frame = new ClientGUI(username, color, clientType);
-		frame.setVisible(true);
-	
-		streamOut = new ObjectOutputStream(socket.getOutputStream());
-		//System.out.println("Ouput Stream created");
-=======
-		if(notConnected != true) {
+			System.out.println("Visible");
 			frame = new ClientGUI(username, color, clientType);
 			frame.setVisible(true);
 			
@@ -252,13 +207,6 @@ public void handleChat(Object msg)
 				thread = new Thread(this);
 				thread.start();
 			}
-		}
-		else {
-			frame.dispose();
-		}
-	
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
-		
 	}
 
 	public void stop()
@@ -286,13 +234,10 @@ public void handleChat(Object msg)
 		serverTH.stop();
 
 	}
-<<<<<<< HEAD
-=======
-	
+
 	public ClientGUI getClientGUI() {
 		return frame;
 	}
->>>>>>> 649768580149e1b70b1115fded499a27d99c651a
 }
 
 class ServerThread extends Thread {
@@ -343,7 +288,7 @@ class ServerThread extends Thread {
 					System.out.println("Problem When trying to listen for messages: " + e.getMessage());
 					
 					// Show a JOptionFrame warning message and then close the GUI if you lose connection to the server
-					JOptionPane.showMessageDialog(new JFrame(),"Host ended the game or you lost connection");
+					JOptionPane.showMessageDialog(new JFrame(), "Host ended the game or you lost connection");
 					if(client.getClientGUI() != null) {
 						client.getClientGUI().dispose();
 					}

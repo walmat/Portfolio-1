@@ -21,9 +21,11 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Timer;
 
@@ -43,10 +45,9 @@ public class Client implements Runnable
 	public Color color;
 	private boolean roundStarted = false;
 	private boolean answerRound = false;
-	private Server s;
-	private QuestionUI answerInput;
-	private String fakeAnswer;
+	private QuestionUI answerFrame;
 	private String receivedQuestion;
+	private Timer timer;
 	
 	// This determines whether they are trying to send a message or image file
 
@@ -88,6 +89,11 @@ public class Client implements Runnable
 						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
+						
+						if(roundStarted == true){
+							
+							System.out.println("You submitted \"" + frame.getMessage() + "\" as your fake answer");
+						}
 					}catch (IOException e) {
 						JOptionPane.showMessageDialog(new JFrame(), "Error Sending Message" + e.getMessage());
 						stop();
@@ -109,9 +115,9 @@ public class Client implements Runnable
 					}
 				}
 				
-				if(answerInput != null && answerInput.newAnswerMessage == true) {
+				if(answerFrame != null && answerFrame.newAnswerMessage == true) {
 					try {
-						message[1] = answerInput.getMessage();
+						message[1] = answerFrame.getMessage();
 						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
@@ -119,10 +125,6 @@ public class Client implements Runnable
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				}
-				
-				if(roundStarted == true) {
-					fakeAnswer = frame.getMessage();
 				}
 			}
 		}
@@ -135,7 +137,7 @@ public void handleChat(Object msg)
 	if(msg instanceof Integer)
 	{
 		if(answerRound == true) {
-			answerInput.changeTimerText(msg + "");
+			answerFrame.changeTimerText(msg + "");
 		}
 		else {
 			frame.changeBtnText(msg + "");
@@ -146,8 +148,11 @@ public void handleChat(Object msg)
 			roundStarted = false;
 			answerRound = false;
 			
-			if(answerInput != null) {
-				answerInput.dispose();
+			// This will highlight the right answer in Green after the round is over for three seconds, then dispose of the answerFrame and make the clientGUI visible again
+			if(answerFrame != null) {
+				answerFrame.highlightRightAnswer();
+				answerFrame.dispose();
+        		frame.setVisible(true);
 			}
 		}
 	}
@@ -159,33 +164,57 @@ public void handleChat(Object msg)
 		roundStarted = true;
 	}
 	
-	else if (msg instanceof QuestionUI){
-		answerInput = (QuestionUI) msg;
-		answerInput.setVisible(true);
-		System.out.println("answerInput: " + answerInput);
-		answerRound = true;
+	else if(msg instanceof ArrayList<?>) {
+		try {
+			if(((ArrayList<?>) msg).get(0) instanceof Answer) {
+				answerFrame = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg, socket.getLocalPort(), frame.color);
+				frame.setVisible(false);
+				answerFrame.setVisible(true);
+				answerRound = true;
+			}
+
+			else if(((ArrayList<?>) msg).get(0) instanceof Score) {
+				frame.updateScoreUI(((ArrayList<Score>) msg));
+				frame.revalidate();
+				frame.repaint();
+			}
+		}
+		 catch(IndexOutOfBoundsException e) {
+				JOptionPane.showMessageDialog(new JFrame(), "It seems that nobody submitted a fake answer/answered the question");
+			}
 	}
 	
-	else if(msg instanceof ArrayList<?>) {
-		
-		if(((ArrayList<?>) msg).get(0) instanceof Answer) {
-			answerInput = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg);
-			answerInput.setVisible(true);
-			answerRound = true;
-		}
-		
-		else if(((ArrayList<?>) msg).get(0) instanceof Score) {
-			System.out.println(((ArrayList<Score>) msg).toString());
-			frame.updateScoreUI(((ArrayList<Score>) msg));
-			frame.revalidate();
-			frame.repaint();
+	// This will update the UI that displays the round you are on
+	else if(msg instanceof String[]) 
+	{	
+		if(((String) Array.get(msg, 0)).trim().equals("Round")) {
+			String currRound = (String) Array.get(msg, 1);
+			String endRound = (String) Array.get(msg, 2);
+			frame.updateRounds(currRound, endRound);
 		}
 	}
-	else if(msg.equals("Server full, or the game is in the middle of a round. Try Again later.")) {
+	
+	else if (msg.equals("Sorry, the game is in the middle of a round. Please try again later") 
+			|| msg.equals("Sorry, the Server is full:( Try Again later.")) {
 			System.out.println("Error Message Received");
-			JOptionPane.showMessageDialog(new JFrame(), "Server is full or game is in the middle of a round, Try Again later :)");
+			JOptionPane.showMessageDialog(new JFrame(), msg);
 			frame.dispose();
-		}
+	}
+	
+	else if (msg.equals("You submitted the right answer") 
+			|| ((String) msg).contains(" clicked your fake answer")) {
+			System.out.println(msg);
+	}
+	
+	else if(((String) msg).contains(" wins the game with a score of ")) {
+		JOptionPane.showMessageDialog(new JFrame(), msg, "GAME OVER!!", JOptionPane.INFORMATION_MESSAGE);
+		frame.dispose();
+	}
+	
+	else if(((String) msg).contains("It seems that not everyone submitted a fake answer/answered the question")) {
+		JOptionPane.showMessageDialog(new JFrame(), msg);
+	}
+	
 	else {
 			frame.recieveMessage((String)msg);
 		}
@@ -194,7 +223,6 @@ public void handleChat(Object msg)
 
 	public void start() throws IOException
 	{
-			System.out.println("Visible");
 			frame = new ClientGUI(username, color, clientType);
 			frame.setVisible(true);
 			

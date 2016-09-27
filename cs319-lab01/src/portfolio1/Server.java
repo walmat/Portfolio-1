@@ -1,31 +1,30 @@
 package portfolio1;
 
+/**
+ * @author Donavan Brooks and Matt Wall
+ * 
+ 
+ */
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-
-/**
- * @author Donavan Brooks and Matt Wall
- * 
- * 	Server used to receive and broadcast messages to clients that are connected.
- * 	You can send text messages and images.
- * 		- The text messages will be written to the chat area in your gui
- * 		- Images will be written to a file in your working directory and then will be sent to all the clients
- */
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
 
 public class Server implements Runnable 
 {
-	
 	private ServerSocket serverSocket = null;
 	private Thread mainThread = null;
 	private ServerGUI frame;
@@ -40,6 +39,10 @@ public class Server implements Runnable
 	private Timer timer;
 	private ObjectOutputStream errorStream;
 	private boolean init = false;
+	private int roundNum = 1;
+	
+	//Holds what end you want to end on
+	private int endRound = 2;
 	
 	public Server(int port)
 	{
@@ -65,11 +68,8 @@ public class Server implements Runnable
 		while(true){
 			try {
 				System.out.println("Waiting for a client....");
-				System.out.println(roundStarted);
 				addThread(serverSocket.accept());
 				System.out.println("Client Count: " + clientNum);
-	
-				
 			}
 			catch(IOException e){
 				System.out.println("Server Acception Failure: " + e.getMessage());
@@ -116,37 +116,44 @@ public class Server implements Runnable
 		return -1;
 	}
 	
+	// Messages are sent to the sever in a String array with the format: [port][message][username]
 	public synchronized void handle(String[] input)
 	{
+		// Once a client connects, it will set the clientThread.username and add the new client to the scores ArrrayList
 		if(init == true) {
+			
+			// Set the username variable for the new clientThread that is added
 			clients.get(clientNum -1).username = input[2];
-//			for(int i = 0; i < clientNum; i++) {
-//				clients.get(i).sendMsg(clients.get(i).username + ": " + input[1]);
-//			}
-			clientScores.add(new Score(clients.get(clientNum -1 ).getID(), clients.get(clientNum -1).username, clients.get(clientNum - 1).score));
-			System.out.println("cLIENtscores size: " + clientScores.size());
+			
+			int ID = clients.get(clientNum -1 ).getID();
+			String user = clients.get(clientNum -1).getUsername();
+			int score = clients.get(clientNum - 1).getScore();
+
+			clientScores.add(new Score(ID,  user, score));
+			
 			updateScore(clients.get(clientNum - 1));
 			init = false;
 		}
 		
-		//new message, send to clients and then write it to history
-		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false) {
+		// If the host client starts the round, then enter this if statement
+		if(input[0].equals(clients.get(0).getID() + "") && input[1].equals("....Start....") && roundStarted == false && roundNum <= endRound) {
 			
+			roundStarted = true;
+			// Saves the question that was sent to the clients, if the questions ArrayList is empty then it throws an error
 			try {
 				sentQuestion = Question.questions.get(new Random().nextInt(Question.questions.size()));
+	
+				// Holds the answer of the sent question
+				sentQuestionAns = sentQuestion.rightAnswer;
 			}catch(IllegalArgumentException e) {
 				JOptionPane.showMessageDialog(new JFrame(), "Sorry, there seems to be no questions in our list."
 															+ " Check your internet connection and try again.");
 				System.exit(-1);
 			}
 			
-			//clientAnswers.add(new Answer("rightAnswer", sentQuestion.rightAnswer));
-			sentQuestionAns = sentQuestion.rightAnswer;
-			
+			// Sends the randomly selected question to all the clients
 			for(int i = 0; i < clientNum; i++) {
-				
 				clients.get(i).sendMsg(sentQuestion);
-				roundStarted = true;
 			}
 			
 			ActionListener actionListener = new ActionListener() 
@@ -159,32 +166,37 @@ public class Server implements Runnable
 			    		clients.get(i).sendMsg(timeRemaining);
 			    	}
 			        
+			    	//  If time is equal to zero, then it will stop the timer, and send the ArrayListof answers submitted by the clients, out to all the clients for the Answer Round
 			        if(timeRemaining <= 0){
+			        
 			        	timer.stop();
-			        	roundStarted = false;
-			        	
+			 
 			        	for(int i = 0; i < clientNum; i++) {
-			        		
+			     
 			        		int port = clients.get(i).getID();
 			        		
 							try {
+								// Randomizes the order of the answers
 								ArrayList<Answer> a = randomizeClientAnswers(port);
 
-								//QuestionUI q = new QuestionUI(sentQuestion.question, a);
-								
-								//It now sends the arrayList not the UI because it was causing the UI not to record button clicks
-								clients.get(i).sendMsg(a);
-								clients.get(i).sentAnswers = a;
-								roundStarted = true;
-								//create a new timer to display the QuestionUI for a certain amount of time
+								//It sends the arrayList of answers to all the clients
+								if(a.size() == clientNum) {
+									clients.get(i).sendMsg(a);
+									clients.get(i).sentAnswers = a;
+								}
+								else {
+									clients.get(i).sendMsg("It seems that not everyone submitted a fake answer/answered the question");
+									clientAnswers.clear();
+								}
 								
 							} catch (CloneNotSupportedException e) {
 								System.out.println("Error trying to randomize answers: " + e.getMessage());
-							}
-							
+							}	
 			        	}     	
 			        	
-			        	//clientAnswers.clear();	
+			        	// Creates a new timer to display the QuestionUI for a certain amount of time. Only if everyone submitted their fake answer
+			        	// Else it ends the round without incrementing it and everything resets
+			        	if(clientAnswers.size() == clientNum) {
 			        	
 			        	ActionListener alistener = new ActionListener() {
 						    int timeRemaining = 10;
@@ -196,34 +208,61 @@ public class Server implements Runnable
 						    	}
 						        
 						        if(timeRemaining <= 0){
+						        	
 						        	timer.stop();
-						        
-						        	for(int i = 0; i < clientNum; i++)
-						        	{
+						        	roundStarted = false;
+						        	
+						        	// Calculate the score for every client
+						        	for(int i = 0; i < clientNum; i++) {
 						        		calculateScore(clients.get(i));
-						        		clients.get(i).sendMsg("Score: " + clients.get(i).score);
 						        	}
-						        	for(int i = 0; i <clientNum; i++ ){ 
+						        	
+						        	// Sends the updated Score to every client
+						        	for(int i = 0; i <clientNum; i++ ) { 
 						        		updateScore(clients.get(i));
 						        	}
 						        	
-						        	roundStarted = false;
+						        	roundNum++;
+						        	
+						        	// If you reach the round limit end the game
+						        	if(roundNum > endRound && roundStarted == false) {
+						        		System.out.println("EEND Game");
+						        		endGame();
+						    		}
+						        	
 						        }
 						    }
 						};
-						timer = new Timer(1000, alistener);
-						timer.start();
-			        	
+						
+							// Start answer round timer
+							timer = new Timer(1000, alistener);
+							timer.start();	
+							clientAnswers.clear();	
+			        	}	
+			        	else {
+			        		roundStarted = false;
+			        	}
 			       }
 			   }
 			};
-			
+			// Start create timer for the fake answer round 
 			timer = new Timer(1000, actionListener);
 			timer.start();
-
 			clientAnswers.clear();	
+			
+			//Increment roundNum
+			
+			String[] roundMsg = {"Round", String.valueOf(roundNum), String.valueOf(endRound)};
+			for(int i = 0; i < clientNum; i++) {
+			
+	    		clients.get(i).sendMsg(roundMsg);
+	    	}
 		}
 		
+		
+		
+		// If the round is started, this will listen for the clients answers and update the Answer ArrayList so that it only store the 
+		// last answer sent in by each individual client.  It knows who sent what answer by pairing it with the port number
 		else if(roundStarted == true){
 			boolean found = false;
 			String port = input[0];
@@ -236,7 +275,6 @@ public class Server implements Runnable
 	 			for(int i = 0; i < clientAnswers.size(); i++) {
 					
 					if(clientAnswers.get(i).port.trim().equals(port.trim())) {
-						System.out.println("Changing already stated Answer Array");
 						clientAnswers.get(i).answer = currClientAnswer;
 						found = true;
 					}
@@ -248,20 +286,20 @@ public class Server implements Runnable
 			}
 		}
 		
+		// If the round has not started then the server will handle messages just like a regular chat 
 		else if(roundStarted == false){
-			//This saves the username of the client who sent the message 
-			//clients.get(findClient(Integer.parseInt(input[0]))).username = input[2];
 			for(int i = 0; i < clientNum; i++) {
 				clients.get(i).sendMsg(input[2] + ": " + input[1]);
 			}
 		}
 		
+		// Prints to ServerGUI
 		frame.recieveMessage(input[1]);
 	}
 	
 	public synchronized void remove(int ID)
 	{
-		//get the ClientThread, remove it from the array and then terminate it
+		//Get the ClientThread, remove it from the array and then terminate it
 	
 		int index = findClient(ID);
 		System.out.println("Client Count: " + clientNum) ;
@@ -277,7 +315,7 @@ public class Server implements Runnable
 		}
 		String removedUser = clients.get(index).username;
 		
-		// Removes user from client threads from the score arraylsist updates the score arraylist and alerts other users who left the game
+		// Removes user from clientThread arraylist, from the score arraylist, updates the score arraylist and alerts the other clients who left the game
 		clients.remove(index);
 		clientScores.remove(index);
 		for(int i = 0; i < clients.size(); i++){
@@ -288,10 +326,11 @@ public class Server implements Runnable
 		System.out.println("Client Count: " + clientNum) ;
 	}
 
+	// Adds threads to ClientThread ArrayList
 	private void addThread(Socket socket)
 	{
-		//add new client
-		if (clientNum <= 4 && roundStarted == false){  
+		//add new client only if the round has not started and the server has less than 4 clients connected
+		if (clientNum < 4 && roundStarted == false){  
 			System.out.println("Client accepted: " + socket);
 			init = true;
 	         clients.add(new ClientThread(this, socket));
@@ -304,11 +343,22 @@ public class Server implements Runnable
 	         catch(IOException e){
 	        	 System.out.println("Error while trying to open thread: " + e.getMessage());
 	         }
-		} else{
-			System.out.println("Sent error message");
+		} 
+		// If the thread is not added and the server has 4 clients connected, send an error message
+		else if (clientNum >= 4){
 			try {
 				errorStream = new ObjectOutputStream(socket.getOutputStream());
-				errorStream.writeObject("Server full, or the game is in the middle of a round. Try Again later.");
+				errorStream.writeObject("Sorry, the Server is full:( Try Again later.");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		// If the thread is not added and the server is in the middle of a round, send an error message
+		else if (roundStarted == true){
+			try {
+				errorStream = new ObjectOutputStream(socket.getOutputStream());
+				errorStream.writeObject("Sorry, the game is in the middle of a round. Please try again later" );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -316,12 +366,13 @@ public class Server implements Runnable
 		}
 			
 	}
-	
-	public ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
+	 
+	// Randomizes the clientAnswer arraylist
+	private ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
 		
 		//solve copying by performing a deep copy.
 		ArrayList<Answer> a = cloneList(clientAnswers);
-		
+
 		for (int i = 0; i < clientAnswers.size(); i++){
 			if (a.get(i).port.equals(String.valueOf(port))) {
 				clients.get(i).createdFakeAnswer = a.get(i).answer;
@@ -332,7 +383,8 @@ public class Server implements Runnable
 		return a;
 	}
 	
-	public static ArrayList<Answer> cloneList(ArrayList<Answer> answers) {
+	// Helper method to help clone the Answer arraylist
+	private static ArrayList<Answer> cloneList(ArrayList<Answer> answers) {
 	    ArrayList<Answer> clonedList = new ArrayList<Answer>(answers.size());
 	    for (Answer a : answers) {
 	    	//pass the old answer to the copy constructor
@@ -341,41 +393,35 @@ public class Server implements Runnable
 	    return clonedList;
 	}
 	
-	public static int findRightAnswer(ArrayList<Answer> a){
-		int i = 0; 
-		for (i = 0; i < a.size(); i++){
-			if (a.get(i).answer.equals(sentQuestionAns)) break;
-		}
-		return i;
-	}
-	
-	public void calculateScore(ClientThread c) { 
+	// Helper method to calculate score.  It determines if the client got the answer right and if anybody entered the fake answer he created
+	// If the client gets the answer right they get 2 points, and they get an additional 1 point forr every client that guessed their fake answer
+	private void calculateScore(ClientThread c) { 
 		
 		String clientPort = String.valueOf(c.getID());
 		
-		System.out.println("RoundStarted " + roundStarted);
 		for(int j = 0; j < clientAnswers.size(); j++) {
 			
 			// If you chose the right answer increment your score by
-			if(clientPort.equals(clientAnswers.get(j).port)) {
+			if(clientAnswers.get(j) != null && clientPort.equals(clientAnswers.get(j).port)) {
 				if(clientAnswers.get(j).answer.equals(sentQuestionAns)){
-					System.out.println("You submitted the right answer");
+					c.sendMsg("You submitted the right answer");
 					c.score += 2;
 				}
 			}
 			
 			// If anybody else chose your answer increment your score by 1
-			else if(c.createdFakeAnswer != null && c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
+			if(c.createdFakeAnswer != null && c.createdFakeAnswer.equals(clientAnswers.get(j).answer)) {
 				
 				// This holds the username of the person that clicked you answer
 				String user = clients.get(findClient(Integer.parseInt(clientAnswers.get(j).port))).username;
-				System.out.println(user + " clicked your answer");
+				c.sendMsg(user + " clicked your fake answer");
 				c.score += 1;
 			}
 		}
 	}
 	
-	public static ArrayList<Score> cloneScoreList(ArrayList<Score> scores) {
+	// Helper method to help clone the Score Arraylist
+	private static ArrayList<Score> cloneScoreList(ArrayList<Score> scores) {
 	    ArrayList<Score> clonedList = new ArrayList<Score>(scores.size());
 	    for (Score s : scores) {
 	    	//pass the old answer to the copy constructor
@@ -384,23 +430,53 @@ public class Server implements Runnable
 	    return clonedList;
 	}
 	
-	public void updateScore(ClientThread c) {
+	// This updates the score arraylist with the new score for every client, and then it sends it to all the clients connected
+	private void updateScore(ClientThread c) {
 		
 		ArrayList<Score> cc = cloneScoreList(clientScores);
 		for(int i = 0; i < clients.size(); i++) {
 			int threadID = c.getID();
 			int scoreListPort = cc.get(i).port;
 			
-			System.out.println(threadID == scoreListPort);
 			if(threadID == scoreListPort) {
 				cc.get(i).score = c.score;
 				clientScores.get(i).score = c.score;
 			}
 		}
+		
 		for(int j = 0; j < clients.size(); j++){
 			clients.get(j).sendMsg(cc);
 		}
+	}
 	
+	// Finds who has the highest score and return that clients thread
+	private ClientThread findScoreLeader() {
+		ClientThread leader = clients.get(0);
 		
+		for(int i = 0; i < clientNum; i++) {
+			if(clients.get(i).score > leader.score){
+				leader = clients.get(i);
+			}
+		}
+		return leader;
+	}	
+	
+	private void endGame() {
+		
+		// Wait for two seconds before ending the game
+		try {
+		
+		ClientThread leader = findScoreLeader();
+		for(int i = 0; i < clientNum; i++) {
+			clients.get(i).sendMsg(leader.username + " wins the game with a score of " + leader.score);
+
+		}
+		//Stops the server
+		stop();
+		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

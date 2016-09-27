@@ -146,26 +146,6 @@ public class Login extends JFrame {
 						EventQueue.invokeLater(new Runnable() {
 							public void run() {
 								try {
-//									InetAddress i = InetAddress.getLocalHost();
-//									System.out.println(i.getHostName());
-//									System.out.println(i.getHostAddress());
-//									System.out.println(Server.clientNum);
-									
-									//check for current client with same username/email
-//									if (Server.clientsList.size() > 0) {
-//										for (int j = 0; j < Server.clientsList.size(); j++){
-//											if (Server.clientsList.get(j).getClientName() == username){
-//												System.out.println("That name is taken sorry.");
-//												dispose();
-//											}
-//											if (Server.clientsList.get(j).getClientEmail() == email){
-//												System.out.println("Email already registered in current game.");
-//												dispose();
-//											}
-//										}
-//									}
-//									//Client client = new Client("localhost", username, password, email, color, 1222);
-//									//clientsList.add(new Client("localhost", username, password, email, color, 1222));
 									JoinStartGUI js = new JoinStartGUI(username, password, email, color);
 									js.setVisible(true);
 								} catch (Exception e) {
@@ -215,8 +195,6 @@ public class Login extends JFrame {
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
 						try {
-							//Client client = new Client("localhost", username, password, email, color, 1222);
-							//clientsList.add(new Client("localhost", username, password, email, color, 1222));
 							JoinStartGUI js = new JoinStartGUI(username, password, email, color);
 							js.setVisible(true);
 						} catch (Exception e) {

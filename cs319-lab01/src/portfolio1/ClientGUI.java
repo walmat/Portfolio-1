@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -43,18 +44,23 @@ public class ClientGUI extends JFrame
 	public boolean startRound;
 	private JButton btnSend;
 	private String user;
+	public Color color;
 	
 	//Score labels
 	JLabel lblScore1;
 	JLabel lblScore2;
 	JLabel lblScore3;
 	JLabel lblScore4;
+	
+	// Number of rounds label
+	JLabel lblNumRounds;
 
 	/**
 	 * Create the frame.
 	 */
 	public ClientGUI(String username, Color color, boolean type)
 	{
+		this.color = color;
 		user = username;
 		setTitle(username);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,6 +77,8 @@ public class ClientGUI extends JFrame
 		chatArea.setEnabled(false);
 		chatArea.setBounds(6, 6, 175, 69);
 		chatArea.setLineWrap(true);
+		DefaultCaret caret = (DefaultCaret)chatArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		contentPane.add(chatArea);
 		
 		textField = new JTextField();
@@ -82,23 +90,12 @@ public class ClientGUI extends JFrame
 		btnSend.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				
+				newTextMessage = true;
 			}
 		});
 		btnSend.setBounds(337, 199, 89, 23);
 		contentPane.add(btnSend);
 		
-		//when btnsend pressed, send the message
-		btnSend.addActionListener(new ActionListener()
-		{
-			
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				// TODO Set format of message and do some action to send it.
-				newTextMessage = true;
-			}
-		});
 		
 		//allow for hitting enter to send a chat message
 		textField.addKeyListener(new KeyListener() 
@@ -147,7 +144,7 @@ public class ClientGUI extends JFrame
 		if(type == true) {
 			
 			JButton btnStart = new JButton("Start Round");
-			btnStart.setBounds(275, 20, 147, 23);
+			btnStart.setBounds(435, 199, 147, 23);
 			contentPane.add(btnStart);
 			btnStart.addMouseListener(new MouseAdapter() {
 				@Override
@@ -173,78 +170,89 @@ public class ClientGUI extends JFrame
 		// Initializing score labels
 		lblScore1 = new JLabel();
 		lblScore1.setBounds(450, 70, 161, 16);
-		lblScore1.setFont((new Font("Tahoma", Font.PLAIN, 20)));
+		lblScore1.setFont((new Font("Tahoma", Font.PLAIN, 16)));
 
 		lblScore2 = new JLabel();
 		lblScore2.setBounds(450, 100, 161, 16);
-		lblScore2.setFont((new Font("Tahoma", Font.PLAIN, 20)));
+		lblScore2.setFont((new Font("Tahoma", Font.PLAIN, 16)));
 	
 		lblScore3 = new JLabel();
 		lblScore3.setBounds(450, 130, 161, 16);
-		lblScore3.setFont((new Font("Tahoma", Font.PLAIN, 20)));
+		lblScore3.setFont((new Font("Tahoma", Font.PLAIN, 16)));
 	
 		lblScore4 = new JLabel();
 		lblScore4.setBounds(450, 160, 161, 16);
-		lblScore4.setFont((new Font("Tahoma", Font.PLAIN, 20)));
+		lblScore4.setFont((new Font("Tahoma", Font.PLAIN, 16)));
+		
+		// Initialize round label
+		lblNumRounds = new JLabel();
+		lblNumRounds.setBounds(220, 20, 147, 23);
+		lblNumRounds.setFont((new Font("Tahoma", Font.PLAIN, 20)));
+		contentPane.add(lblNumRounds);
 }
 
-public String getMessage()
-{		
-	if(newTextMessage == true) {
-		newTextMessage = false;
-		message = textField.getText();
-	}
-	else if(newImageMessage == true) {
-		newImageMessage = false;
+	public String getMessage()
+	{		
+		if(newTextMessage == true) {
+			newTextMessage = false;
+			message = textField.getText();
+			textField.setText("");
+		}
+		
+		return message;
+	
 	}
 	
-	return message;
-
-}
-
-public void recieveMessage(String message)
-{
-	if (!message.trim().equals("")){
-		chatArea.append(message + "\n");
-	}
-	textField.setText("");
-}	
-
-public void changeBtnText(String txt) {
-	btnSend.setText(txt);
-}
+	public void recieveMessage(String message)
+	{
+		if (!message.trim().equals("")){
+			chatArea.append(message + "\n");
+		}
+		textField.setText("");
+	}	
 	
-// Updates UI to display everyones scores
-public void updateScoreUI(ArrayList<Score> scores) { 
-	
-	if(scores.size() >= 1) {
-		lblScore1.setText(scores.get(0).username + ": " + scores.get(0).score);
-		contentPane.add(lblScore1);
-	}
-	else 
-		contentPane.remove(lblScore1);
-	
-	if(scores.size() >= 2) {
-		lblScore2.setText(scores.get(1).username + ": " + scores.get(1).score);
-		contentPane.add(lblScore2);
-	}
-	else
-		contentPane.remove(lblScore2);
-	
-	if(scores.size() >= 3) {
-		lblScore3.setText(scores.get(2).username + ": " + scores.get(2).score);
-		contentPane.add(lblScore3);
-	}
-	else
-		contentPane.remove(lblScore3);
-	
-	if(scores.size() >= 4) {
-		lblScore4.setText(scores.get(3).username + ": " + scores.get(3).score);
-		contentPane.add(lblScore4);
-	}
-	else
-		contentPane.remove(lblScore4);
+	// Changes the button text on the send button
+	public void changeBtnText(String txt) {
+		btnSend.setText(txt);
 	}
 		
+	// Updates UI to display everyones scores
+	public void updateScoreUI(ArrayList<Score> scores) { 
+		
+		if(scores.size() >= 1) {
+			lblScore1.setText(scores.get(0).username + ": " + scores.get(0).score);
+			contentPane.add(lblScore1);
+		}
+		else 
+			contentPane.remove(lblScore1);
+		
+		if(scores.size() >= 2) {
+			lblScore2.setText(scores.get(1).username + ": " + scores.get(1).score);
+			contentPane.add(lblScore2);
+		}
+		else
+			contentPane.remove(lblScore2);
+		
+		if(scores.size() >= 3) {
+			lblScore3.setText(scores.get(2).username + ": " + scores.get(2).score);
+			contentPane.add(lblScore3);
+		}
+		else
+			contentPane.remove(lblScore3);
+		
+		if(scores.size() >= 4) {
+			lblScore4.setText(scores.get(3).username + ": " + scores.get(3).score);
+			contentPane.add(lblScore4);
+		}
+		else
+			contentPane.remove(lblScore4);
+		}
+	
+	// Updates the label that keeps track of what round you are on
+	public void updateRounds(String currRound, String endRound) {
+		
+		lblNumRounds.setText("Round " + currRound + " of " + endRound);
+	}
+			
 }
 

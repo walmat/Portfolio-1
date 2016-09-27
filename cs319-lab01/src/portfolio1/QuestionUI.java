@@ -44,15 +44,20 @@ public class QuestionUI extends JFrame
 	JLabel lblTimer;
 	public int numAnswer;
 	public ArrayList<Answer> a;
+	private int clientPort;
+	JButton button1 = new JButton("");
+	JButton button2 = new JButton("");
+	JButton button3 = new JButton("");
+	JButton button4 = new JButton("");
 
 	/**
 	 * Create the frame.
 	 */
-	public QuestionUI(String q, ArrayList<Answer> answers)
+	public QuestionUI(String q, ArrayList<Answer> answers, int port_, Color color)
 	{
 		numAnswer = answers.size();
-		System.out.println(numAnswer);
 		a = answers;
+		clientPort = port_;
 		
 		setTitle("Questions");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,7 +66,7 @@ public class QuestionUI extends JFrame
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		//contentPane.setBackground(color);
+		contentPane.setBackground(color);
 
 		
 		JLabel lblTypeYourAnswer = new JLabel("Select your answer");
@@ -72,7 +77,6 @@ public class QuestionUI extends JFrame
 		
 		if (numAnswer >= 1){
 			
-			JButton button1 = new JButton("");
 			button1.setBounds(51, 150, 163, 23);
 			button1.setText(answers.get(0).answer);
 			
@@ -93,7 +97,6 @@ public class QuestionUI extends JFrame
 		
 		if (numAnswer >= 2){
 			
-			JButton button2 = new JButton("");
 			button2.setBounds(226, 150, 163, 23);
 			button2.setText(answers.get(1).answer);
 			
@@ -104,7 +107,6 @@ public class QuestionUI extends JFrame
 						public void run() {
 							newAnswerMessage = true;
 							chosenAnswer = button2.getText();
-							System.out.println("Button2 clicked");
 						}
 					});
 				}
@@ -113,7 +115,7 @@ public class QuestionUI extends JFrame
 		}
 
 		if (numAnswer >= 3){
-			JButton button3 = new JButton("");
+			
 			button3.setBounds(51, 201, 163, 23);
 			button3.setText(answers.get(2).answer);
 			
@@ -132,7 +134,7 @@ public class QuestionUI extends JFrame
 		}
 		
 		if (numAnswer >= 4){
-			JButton button4 = new JButton("");
+			
 			button4.setBounds(226, 201, 163, 23);
 			button4.setText(answers.get(3).answer);
 			button4.addMouseListener(new MouseAdapter() {
@@ -160,18 +162,18 @@ public class QuestionUI extends JFrame
 		contentPane.add(questionField);
 		
 		lblTimer = new JLabel();
-		lblTimer.setBounds(20, 160, 50, 50);
-		contentPane.add(lblTimer );
+		lblTimer.setBounds(10, 100, 100, 50);
+		contentPane.add(lblTimer);
 	}
 	
-	public static void main(String[] args) {
-		String q = "What the fuck";
-		ArrayList<Answer> a = new ArrayList<Answer>();
-		a.add(new Answer("Cool", "1234"));
-		a.add(new Answer("fuck", "4321"));
-		QuestionUI ui = new QuestionUI(q, a);
-		ui.setVisible(true);
-	}
+//	public static void main(String[] args) {
+//		String q = "What the fuck";
+//		ArrayList<Answer> a = new ArrayList<Answer>();
+//		a.add(new Answer("Cool", "1234"));
+//		a.add(new Answer("fuck", "4321"));
+//		QuestionUI ui = new QuestionUI(q, a);
+//		ui.setVisible(true);
+//	}
 	
 	public String getMessage()
 	{		
@@ -187,10 +189,32 @@ public class QuestionUI extends JFrame
 			questionField.setText(message + "\n");
 		}
 		questionField.setText("");
-	}
+	} 
 	
 	public void changeTimerText(String msg) {
-		lblTimer.setText(msg);
+		lblTimer.setText("Time Left: " + msg);
+	}
+	
+	public void highlightRightAnswer() {
+		int buttonIndex = 0;
+		for(int i = 0; i < numAnswer; i++) {
+			if(a.get(i).port.equals(String.valueOf(clientPort))) {
+				buttonIndex = i;
+			}
+		}
+		
+		if(buttonIndex == 0) {
+			button1.setBackground(Color.GREEN);
+		}
+		else if(buttonIndex == 1) {
+			button2.setBackground(Color.GREEN);
+		}
+		else if(buttonIndex == 2) {
+			button3.setBackground(Color.GREEN);
+		}
+		else if(buttonIndex == 3) {
+			button4.setBackground(Color.GREEN);
+		}
 	}
 }
 

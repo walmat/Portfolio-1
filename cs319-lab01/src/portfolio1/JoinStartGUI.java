@@ -1,45 +1,27 @@
 package portfolio1;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Color;
-import javax.swing.JComboBox;
-import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
-import javax.swing.JDesktopPane;
-import javax.swing.JFileChooser;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-
+/**
+ * 
+ * @author Donavan Brooks and Matt Wall
+ * 
+ * GUI that prompts users whether they want to join or start a game.
+ * 		- If start game is selected then it creates a server and launches your host client
+ * 		- To join a game you must enter the valid ipaddress of you host, who must be on the same network, and it launches your client and connects you to the server
+ *
+ */
 public class JoinStartGUI extends JFrame{
 
 		private JPanel contentPane;

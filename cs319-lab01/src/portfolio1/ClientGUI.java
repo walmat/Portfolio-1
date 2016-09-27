@@ -1,11 +1,8 @@
 package portfolio1;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
@@ -16,8 +13,6 @@ import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import java.awt.Font;
@@ -25,7 +20,13 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
+
+/**
+ * @author Donavan Brooks and Matt Wall
+ * 
+ * Main GUI of the game holds chat text area where clients can send messages to each other and the receive the question to create a fake answer for.
+ * Also displays scores and the round that the game is on
+ */
 
 public class ClientGUI extends JFrame
 {
@@ -211,12 +212,18 @@ public class ClientGUI extends JFrame
 		textField.setText("");
 	}	
 	
-	// Changes the button text on the send button
+	/**
+	 * Changes the button text on the send button
+	 * @param txt
+	 */
 	public void changeBtnText(String txt) {
 		btnSend.setText(txt);
 	}
 		
-	// Updates UI to display everyones scores
+	/**
+	 * Updates UI to display everyones scores
+	 * @param scores
+	 */
 	public void updateScoreUI(ArrayList<Score> scores) { 
 		
 		if(scores.size() >= 1) {
@@ -248,7 +255,13 @@ public class ClientGUI extends JFrame
 			contentPane.remove(lblScore4);
 		}
 	
-	// Updates the label that keeps track of what round you are on
+	
+	/**
+	 * Updates the label that keeps track of what round you are on
+	 * 
+	 * @param currRound
+	 * @param endRound
+	 */
 	public void updateRounds(String currRound, String endRound) {
 		
 		lblNumRounds.setText("Round " + currRound + " of " + endRound);

@@ -164,12 +164,17 @@ public class QuestionUI extends JFrame
 		return chosenAnswer;
 	}
 	
-	// Changes the timer label
+	/**
+	 * Changes the timer label to the msg parameter
+	 * @param msg
+	 */
 	public void changeTimerText(String msg) {
 		lblTimer.setText("Time Left: " + msg);
 	}
 	
-	// Highlights the correct answer in green, and it finds it based on port number
+	/**
+	 * Highlights the correct answer in green, and it finds it based on port number
+	 */
 	public void highlightRightAnswer() {
 		int buttonIndex = 0;
 		for(int i = 0; i < numAnswer; i++) {

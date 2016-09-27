@@ -1,10 +1,5 @@
 package portfolio1;
 
-/**
- * @author Donavan Brooks and Matt Wall
- * 
- 
- */
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -18,6 +13,12 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
+/**
+ * @author Donavan Brooks and Matt Wall
+ * 
+ * 	Server used to play a quiz game in which every client receives a question and creates a fake answer for it, then if you guess the question right you receive points and 
+ * 	if someone guesses your fake answer you also receive points.
+ */
 
 public class Server implements Runnable 
 {
@@ -40,6 +41,10 @@ public class Server implements Runnable
 	//Holds what end you want to end on
 	private int endRound = 10;
 	
+	/**
+	 * Server Constructor
+	 * @param port
+	 */
 	public Server(int port)
 	{
 		//Binding and starting server
@@ -58,6 +63,7 @@ public class Server implements Runnable
 		q.fillQuestionList();
 	}
 
+	
 	public void run()
 	{
 		//hang and wait for a client or show error
@@ -78,6 +84,9 @@ public class Server implements Runnable
 		}
 	}
 
+	/**
+	 * Sets the serverGUI visible and starts mainthread
+	 */
 	public void start()
 	{
 		frame = new ServerGUI();
@@ -90,7 +99,10 @@ public class Server implements Runnable
 		}
 	}
 
-	
+	/**
+	 * Stops the main Thread
+	 * @throws IOException
+	 */
 	public void stop() throws IOException
 	{
 		if(mainThread != null) {
@@ -99,6 +111,12 @@ public class Server implements Runnable
 		}
 	}
 
+	/**
+	 * Finds client in ClientThread array list based on the ID and returns its index
+	 * else it returns -1
+	 * @param ID
+	 * @return
+	 */
 	private int findClient(int ID)
 	{
 		//Find Client
@@ -111,9 +129,14 @@ public class Server implements Runnable
 		return -1;
 	}
 	
-	// Messages are received by the sever in a String array with the format: [port][message][username]
-	// Handles message sent to the server and determines how they should be handled
-	
+
+	/**
+	 *  Messages are received by the sever in a String array with the format: [port][message][username]
+	 *  Handles message sent to the server and determines how they should be handled
+	 *  	Whether that be starting a round of the game, storing them as answers or just sending the message back out to all the clients
+	 *  
+	 * @param input
+	 */
 	public synchronized void handle(String[] input)
 	{
 		// Once a client connects, it will set the clientThread.username and add the new client to the scores ArrrayList
@@ -292,6 +315,11 @@ public class Server implements Runnable
 		frame.recieveMessage(input[1]);
 	}
 	
+	/**
+	 * This will remove the client, with the ID specified as a parameter, from the ClientThread Arraylist and score Arraylist
+	 * This will update the score arraylist and alert all the other clients who left the game
+	 * @param ID
+	 */
 	public synchronized void remove(int ID)
 	{
 		//Get the ClientThread, remove it from the array and then terminate it
@@ -321,7 +349,12 @@ public class Server implements Runnable
 		System.out.println("Client Count: " + clientNum) ;
 	}
 
-	// Adds threads to ClientThread ArrayList
+
+	/**
+	 * 	Adds threads to ClientThread ArrayList only if the game is not in the middle of a round and the server has less than 4 clients connected to it
+	 * 	Anything else will send the appropriate error message to the client trying to connect
+	 * @param socket
+	 */
 	private void addThread(Socket socket)
 	{
 		//add new client only if the round has not started and the server has less than 4 clients connected
@@ -362,7 +395,14 @@ public class Server implements Runnable
 			
 	}
 	 
-	// Randomizes the clientAnswer arraylist
+	
+	/**
+	 * Randomizes the answers in the clientAnswer arrayList
+	 * 
+	 * @param port
+	 * @return
+	 * @throws CloneNotSupportedException
+	 */
 	private ArrayList<Answer> randomizeClientAnswers(int port) throws CloneNotSupportedException{		
 		
 		//solve copying by performing a deep copy.
@@ -378,7 +418,11 @@ public class Server implements Runnable
 		return a;
 	}
 	
-	// Helper method to help clone the Answer arraylist
+	/**
+	 * Helper method to help clone the Answer arraylist
+	 * @param answers
+	 * @return
+	 */
 	private static ArrayList<Answer> cloneList(ArrayList<Answer> answers) {
 	    ArrayList<Answer> clonedList = new ArrayList<Answer>(answers.size());
 	    for (Answer a : answers) {
@@ -388,8 +432,12 @@ public class Server implements Runnable
 	    return clonedList;
 	}
 	
-	// Helper method to calculate score.  It determines if the client got the answer right and if anybody entered the fake answer he created
-	// If the client gets the answer right they get 2 points, and they get an additional 1 point for every player that guessed their fake answer
+
+	/**
+	 * 	Helper method to calculate score.  It determines if the client got the answer right and if anybody entered the fake answer he created
+	 *  If the client gets the answer right they get 2 points, and they get an additional 1 point for every player that guessed their fake answer
+	 * @param c
+	 */
 	private void calculateScore(ClientThread c) { 
 		
 		String clientPort = String.valueOf(c.getID());
@@ -415,7 +463,11 @@ public class Server implements Runnable
 		}
 	}
 	
-	// Helper method to help clone the Score Arraylist
+	/**
+	 * Helper method to help clone the Score Arraylist
+	 * @param scores
+	 * @return
+	 */
 	private static ArrayList<Score> cloneScoreList(ArrayList<Score> scores) {
 	    ArrayList<Score> clonedList = new ArrayList<Score>(scores.size());
 	    for (Score s : scores) {
@@ -425,7 +477,11 @@ public class Server implements Runnable
 	    return clonedList;
 	}
 	
-	// This updates the score arraylist with the new score for every client, and then it sends it to all the clients connected
+	
+	/**
+	 * This updates the score arraylist with the new score for every client, and then it sends it to all the clients connected
+	 * @param c
+	 */
 	private void updateScore(ClientThread c) {
 		
 		ArrayList<Score> cc = cloneScoreList(clientScores);
@@ -444,7 +500,10 @@ public class Server implements Runnable
 		}
 	}
 	
-	// Finds who has the highest score and return that clients thread
+    /**
+     * Finds who has the highest score and return that clients thread
+     * @return
+     */
 	private ClientThread findScoreLeader() {
 		ClientThread leader = clients.get(0);
 		
@@ -456,7 +515,9 @@ public class Server implements Runnable
 		return leader;
 	}	
 	
-	// Sends all the clients the end game message
+	/**
+	 * Sends all the clients the end game message
+	 */
 	private void endGame() {
 		try {
 			ClientThread leader = findScoreLeader();

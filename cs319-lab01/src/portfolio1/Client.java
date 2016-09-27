@@ -1,10 +1,5 @@
 package portfolio1;
 
-/**
- * @author Donavan Brooks and Matt Wall
- * 
- */
-
 import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,6 +13,13 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+/**
+ * @author Donavan Brooks and Matt Wall
+ * 
+ * 	Client used to play a quiz game in which every client receives a question and creates a fake answer for it, then if you guess the question right you receive points and 
+ * 	if someone guesses your fake answer you also receive points.
+ * 
+ */
 public class Client implements Runnable
 {
 	private Socket socket = null;
@@ -34,8 +36,16 @@ public class Client implements Runnable
 	private QuestionUI answerFrame;
 	private String receivedQuestion;
 	
-	// This determines whether they are trying to send a message or image file
-
+	/**
+	 * Client Constructor 
+	 * @param ipAddr
+	 * @param username
+	 * @param password
+	 * @param email
+	 * @param color_
+	 * @param serverPort
+	 * @param type
+	 */
 	public Client(String ipAddr, String username, String password, String email, Color color_, int serverPort, boolean type)
 	{
 		this.username = username;
@@ -57,10 +67,13 @@ public class Client implements Runnable
 		}
 	}
 
+	/**
+	 * 	Checks for a new message, once we receive it, streamOut will send it to the server
+	 *	Messages are sent to the sever in a String array with the format: [port][message][username]
+	 */
 	public void run()
 	{
-		//check for a new message, once we receive it, streamOut will send it to the server
-		// Messages are sent to the sever in a String array with the format: [port][message][username]
+		
 		
 		while(thread != null){
 			String[] message = new String[3];
@@ -122,7 +135,11 @@ public class Client implements Runnable
 		}
 	}
 
-	// Handles all messages that are received by server and interprets how to handle them
+	/**
+	 * Handles all messages that are received by server and interprets how to handle them
+	 * It handles error messages, messages on whether to start the round, it also determines whether to open the QuestionUI
+	 * @param msg
+	 */
 	
 	public synchronized void handleChat(Object msg) {
 	

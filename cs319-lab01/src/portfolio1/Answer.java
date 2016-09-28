@@ -1,5 +1,8 @@
 package portfolio1;
 
+/**
+ * @author Matt Wall
+ */
 import java.io.Serializable;
 
 public class Answer implements Serializable{

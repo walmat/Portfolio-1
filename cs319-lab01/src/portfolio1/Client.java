@@ -1,35 +1,25 @@
 package portfolio1;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-/**
- * @author Donavan Brooks and Matt Wall
- * 
- * Client used to receive messages from the server and broadcast messages to the server where they will be sent to all clients.
- * 	You can send text messages and images.
- * 		- The text messages will be written to the chat area in your gui
- * 		- Images will be written to a file in your working directory and then will be sent to all the clients
- * 
- * 	If you recieve an image it will be saved to your working directory and opened up in a JFrame
- * 	A text message will just be displayed in chatGui
- */
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
-import javax.swing.Timer;
-
+import java.util.concurrent.TimeUnit;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+/**
+ * @author Donavan Brooks and Matt Wall
+ * 
+ * 	Client used to play a quiz game in which every client receives a question and creates a fake answer for it, then if you guess the question right you receive points and 
+ * 	if someone guesses your fake answer you also receive points.
+ * 
+ */
 public class Client implements Runnable
 {
 	private Socket socket = null;
@@ -43,14 +33,19 @@ public class Client implements Runnable
 	public Color color;
 	private boolean roundStarted = false;
 	private boolean answerRound = false;
-	private boolean connected = false;
-	private Server s;
-	private QuestionUI answerInput;
-	private String fakeAnswer;
-	private int score = 0;
+	private QuestionUI answerFrame;
+	private String receivedQuestion;
 	
-	// This determines whether they are trying to send a message or image file
-
+	/**
+	 * Client Constructor 
+	 * @param ipAddr
+	 * @param username
+	 * @param password
+	 * @param email
+	 * @param color_
+	 * @param serverPort
+	 * @param type
+	 */
 	public Client(String ipAddr, String username, String password, String email, Color color_, int serverPort, boolean type)
 	{
 		this.username = username;
@@ -72,32 +67,47 @@ public class Client implements Runnable
 		}
 	}
 
+	/**
+	 * 	Checks for a new message, once we receive it, streamOut will send it to the server
+	 *	Messages are sent to the sever in a String array with the format: [port][message][username]
+	 */
 	public void run()
 	{
-		//check for a new message, once we receive it, streamOut will send it to the server
+		
+		
 		while(thread != null){
-			String[] message = new String[2];
+			String[] message = new String[3];
 			
 			if(frame != null) { 
-				
+				// This will hold the port of the client that sent the message
 				message[0] = String.valueOf(this.socket.getLocalPort());
 				
+				// This sends the message to the server if you click enter or the send button on ClientGUI
 				if(frame.newTextMessage == true) {
 				
 					try{
 						message[1] = frame.getMessage();
+						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
+						
+						// If you are in the middle of a round it will print to console what fake answer you sent in
+						if(roundStarted == true) {
+							
+							System.out.println("You submitted \"" + frame.getMessage() + "\" as your fake answer");
+						}
 					}catch (IOException e) {
 						JOptionPane.showMessageDialog(new JFrame(), "Error Sending Message" + e.getMessage());
 						stop();
 					}	
 				}
 			
+				// If you click the host clicks the startRound button then it will sned a message to the server, alerting them to start the round
 				if(frame.startRound == true && roundStarted == false) {
 					
 					try {
 						message[1] = "....Start....";
+						message[2] = username;
 						streamOut.writeObject(message);
 						streamOut.flush();
 						frame.startRound = false;
@@ -108,90 +118,144 @@ public class Client implements Runnable
 					}
 				}
 				
-				if(roundStarted == true) {
-					fakeAnswer = frame.getMessage();
+				// This sends your answer for the answer round to the server and prints to console the answer you selected
+				if(answerFrame != null && answerFrame.newAnswerMessage == true) {
+					try {
+						System.out.println("Selected Answer: " + answerFrame.getMessage());
+						message[1] = answerFrame.chosenAnswer;
+						message[2] = username;
+						streamOut.writeObject(message);
+						streamOut.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * Handles all messages that are received by server and interprets how to handle them
+	 * It handles error messages, messages on whether to start the round, it also determines whether to open the QuestionUI
+	 * @param msg
+	 */
 	
-public void handleChat(Object msg)
-	{
-	//If it is a text message just print it in the ui
-	if(msg instanceof Integer)
-	{
-		if(answerRound == true) {
-			answerInput.changeTimerText(msg + "");
+	public synchronized void handleChat(Object msg) {
+	
+		if(msg instanceof Integer)
+		{
+			if(answerRound == true) {
+				answerFrame.changeTimerText(msg + "");
+				if((int) msg <= 0) {
+					answerRound = false;
+					// This will highlight the right answer in Green for three seconds  after the round is over , then dispose of the answerFrame and make the clientGUI visible again
+					if(answerFrame != null) {
+	
+						try {
+							TimeUnit.SECONDS.sleep(2);
+					    	answerFrame.highlightRightAnswer();
+					    	TimeUnit.SECONDS.sleep(3);
+					        answerFrame.dispose();
+					        frame.setVisible(true);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			// This changes the timer for when you are creating your fake answer
+			else {
+				frame.changeBtnText(msg + "");
+				if((int) msg <= 0) {
+					frame.changeBtnText("Send");
+					roundStarted = false;
+				}
+			}
+			
+			
 		}
+		// If the client recieves a question then print it to the chat area and start the round
+		else if(msg instanceof Question){
+			
+			frame.recieveMessage(((Question) msg).getQuestion());
+			receivedQuestion = ((Question) msg).getQuestion();
+			roundStarted = true;
+		}
+		
+		else if(msg instanceof ArrayList<?>) {
+			
+			// If the client receives an array list of questions then open up a QuestionUI and make the clientGUI not visible
+			if(((ArrayList<?>) msg).get(0) instanceof Answer) {
+				answerFrame = new QuestionUI(receivedQuestion, (ArrayList<Answer>)msg, socket.getLocalPort(), frame.color);
+				frame.setVisible(false);
+				answerFrame.setVisible(true);
+				answerRound = true;
+			}
+			// If the client receives an array list of scores then open update the clientGUI with the new scores
+			else if(((ArrayList<?>) msg).get(0) instanceof Score) {
+				frame.updateScoreUI(((ArrayList<Score>) msg));
+				frame.revalidate();
+				frame.repaint();
+			}
+		}
+		
+		// This will update the UI that displays the round you are on
+		else if(msg instanceof String[]) 
+		{	
+			if(((String) Array.get(msg, 0)).trim().equals("Round")) {
+				String currRound = (String) Array.get(msg, 1);
+				String endRound = (String) Array.get(msg, 2);
+				frame.updateRounds(currRound, endRound);
+			}
+		}
+		
+		// ---------- EROR Handling sent by the server ----------------
+		
+		else if (msg.equals("Sorry, the game is in the middle of a round. Please try again later") 
+				|| msg.equals("Sorry, the Server is full:( Try Again later.")) {
+				System.out.println("Error Message Received");
+				JOptionPane.showMessageDialog(new JFrame(), msg);
+				frame.dispose();
+		}
+		
+		else if (msg.equals("You submitted the right answer") 
+				|| ((String) msg).contains(" clicked your fake answer")) {
+				System.out.println(msg);
+		}
+		
+		else if(((String) msg).contains(" wins the game with a score of ")) {
+			JOptionPane.showMessageDialog(new JFrame(), msg, "GAME OVER!!", JOptionPane.INFORMATION_MESSAGE);
+			frame.dispose();
+		}
+		
+		else if(((String) msg).contains("It seems that not everyone submitted a fake answer/answered the question")) {
+			JOptionPane.showMessageDialog(new JFrame(), msg);
+		}
+		//--------------- Done -------------------------------
+		
+		// If the client receives anything else than just print it to the chat area
 		else {
-			frame.changeBtnText(msg + "");
+				frame.recieveMessage((String)msg);
+			}
 		}
 		
-		if((int) msg <= 0) {
-			frame.changeBtnText("Send");
-			roundStarted = false;
-			answerRound = false;
-//			if(answerInput != null) {
-//				
-//				answerInput.dispose();
-//			}
-		}
-	}
-	
-	else if(msg instanceof Question){
-		
-		frame.recieveMessage(((Question) msg).getQuestion());
-		roundStarted = true;
-	}
-	
-	else if (msg instanceof QuestionUI){
-		answerInput = (QuestionUI) msg;
-		answerInput.setVisible(true);
-		System.out.println("answerInput: " + answerInput);
-		answerRound = true;
-	}
-	
-//	else if(msg instanceof ArrayList<?>) {
-//		
-//		ArrayList<Answer> originalAnswers = new ArrayList<Answer>();
-//		originalAnswers = answerInput.getAnswersToQuestions();
-//		
-//		for(int i = 0; i < ((ArrayList<Answer>) msg).size(); i++) {
-//			if((this.socket.getLocalPort() + "").equals(((ArrayList<Answer>) msg).get(i).port) 
-//					&& ){
-//				score += answerInput.validateAnswer()
-//			}
-//			
-//			else {
-//				if(answerInput.chosenAnswer.equals(((ArrayList<Answer>) msg).get(i).answer)) {
-//					score += 1;
-//				}
-//			}
-//		}
-//		
-//	}
-	
-	else {
-		frame.recieveMessage((String)msg);
-		}
-	}
-	
 
 	public void start() throws IOException
 	{
-	
-		frame = new ClientGUI(username, color, clientType);
-		frame.setVisible(true);
-	
-		streamOut = new ObjectOutputStream(socket.getOutputStream());
-		//System.out.println("Ouput Stream created");
-		
-		if(thread == null) {
-			serverTH = new ServerThread(this, socket);
-			thread = new Thread(this);
-			thread.start();
-		}
+			frame = new ClientGUI(username, color, clientType);
+			frame.setVisible(true);
+			
+			streamOut = new ObjectOutputStream(socket.getOutputStream());
+			String[] connectedMsg = {String.valueOf(socket.getLocalPort()) , "Connected", username};
+			streamOut.writeObject(connectedMsg);
+			
+			if(thread == null) {
+				serverTH = new ServerThread(this, socket);
+				thread = new Thread(this);
+				thread.start();
+			}
 	}
 
 	public void stop()
@@ -219,10 +283,14 @@ public void handleChat(Object msg)
 		serverTH.stop();
 
 	}
+
+	public ClientGUI getClientGUI() {
+		return frame;
+	}
 }
 
-
-	class ServerThread extends Thread {
+//Thread that solely listens for messages from the server
+class ServerThread extends Thread {
 		private Socket sock = null;
 		private Client client = null;
 		private ObjectInputStream streamIn = null;
@@ -244,6 +312,7 @@ public void handleChat(Object msg)
 			catch(IOException e)
 			{
 				System.out.println("Error while trying to get Input Stream: " + e.getMessage());
+				client.getClientGUI().dispose();
 				client.stop();
 			}
 		}
@@ -267,6 +336,12 @@ public void handleChat(Object msg)
 				}
 				catch(IOException e) {
 					System.out.println("Problem When trying to listen for messages: " + e.getMessage());
+					
+					// Show a JOptionFrame warning message and then close the GUI if you lose connection to the server
+					JOptionPane.showMessageDialog(new JFrame(), "Host ended the game or you lost connection");
+					if(client.getClientGUI() != null) {
+						client.getClientGUI().dispose();
+					}
 					client.stop();
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
